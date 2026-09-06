@@ -12,7 +12,7 @@ metrics:
   - { label: "max Cd (3D)", value: "3.21" }
 featured: true
 order: 1
-# coverImage: "./images/2d-vs-3d-streamlined-body/cover.png"
+coverImage: "./images/research-project-cms/Meshed_Fish.png"
 # gallery:
 #   - "./images/2d-vs-3d-streamlined-body/velocity-mag.png"
 #   - "./images/2d-vs-3d-streamlined-body/pressure-dist.png"
@@ -20,31 +20,31 @@ order: 1
 
 ## Motivation
 
-Ethohydraulics examines the ways living organisms interact with fluid environments, which is crucial for understanding how aquatic fauna navigate turbulent river currents[cite: 1]. This project investigates the precise influence of vortex structures on fish performance by comparing two-dimensional (2D) and three-dimensional (3D) numerical models[cite: 1]. The primary goal is to evaluate the impact of model dimensionality on the accuracy of representing hydromechanical characteristics, which directly informs the design of bio-mimetic underwater vehicles[cite: 1].
+Ethohydraulics examines the ways living organisms interact with fluid environments, which is crucial for understanding how aquatic fauna navigate turbulent river currents. This project investigates the precise influence of vortex structures on fish performance by comparing two-dimensional (2D) and three-dimensional (3D) numerical models. The primary goal is to evaluate the impact of model dimensionality on the accuracy of representing hydromechanical characteristics, which directly informs the design of bio-mimetic underwater vehicles.
 
 ## Methodology
 
-*   **Domain & Geometry:** The computational domain measured 2.4m x 1.1m x 0.36m, utilizing a NACA 0025 airfoil with a 0.3m chord length to represent the fish-like body[cite: 1]. 
-*   **Meshing:** The `blockMesh` utility generated the base structured mesh, while `snappyHexMesh` was executed to create high-quality, unstructured hexahedral and tetrahedral cells for refinement around the curving surfaces of the airfoil[cite: 1].
-*   **Solver Setup:** Simulations were executed using `pimpleFoam`, a pressure-based solver built for transient, incompressible flows[cite: 1]. 
-*   **Turbulence Modeling:** The $k-\omega$ SST (Shear Stress Transport) model was selected for its robust near-wall treatment, allowing correct resolution of the viscous sub-layer without requiring an excessively fine grid[cite: 1].
-*   **Boundary Conditions:** A fixed inlet velocity of 1 m/s was established, alongside a no-slip condition applied directly to the fish surface[cite: 1].
+*   **Domain & Geometry:** The computational domain measured 2.4m x 1.1m x 0.36m, utilizing a NACA 0025 airfoil with a 0.3m chord length to represent the fish-like body. 
+*   **Meshing:** The `blockMesh` utility generated the base structured mesh, while `snappyHexMesh` was executed to create high-quality, unstructured hexahedral and tetrahedral cells for refinement around the curving surfaces of the airfoil.
+*   **Solver Setup:** Simulations were executed using `pimpleFoam`, a pressure-based solver built for transient, incompressible flows. 
+*   **Turbulence Modeling:** The $k-\omega$ SST (Shear Stress Transport) model was selected for its robust near-wall treatment, allowing correct resolution of the viscous sub-layer without requiring an excessively fine grid.
+*   **Boundary Conditions:** A fixed inlet velocity of 1 m/s was established, alongside a no-slip condition applied directly to the fish surface.
 
 *(Insert your snappyHexMesh and blockMesh visualization videos/images here)*
 
 ## Results & Analysis
 
-The comparative analysis across discrete time intervals (4s, 7s, and 10s) revealed significant deviations between the 2D and 3D implementations[cite: 1]. 
+The comparative analysis across discrete time intervals (4s, 7s, and 10s) revealed significant deviations between the 2D and 3D implementations. 
 
-*   **Vortex Formation:** Visual inspections in ParaView showed that vortices fully formed earlier in the 3D model[cite: 1]. This occurs because three-dimensional flows possess inherent complexity that amplifies turbulence and vorticity mixing, a feature the 2D model cannot adequately capture[cite: 1].
-*   **Pressure Distribution:** Pressure distributions along the airfoil surface were not in close agreement[cite: 1]. The 2D simulation ignores spanwise variations and boundary layer interactions, leading to an oversimplified aerodynamic profile[cite: 1].
-*   **Aerodynamic Drag:** The drag coefficient ($C_d$) was evaluated using the following relationship[cite: 1]:
+*   **Vortex Formation:** Visual inspections in ParaView showed that vortices fully formed earlier in the 3D model. This occurs because three-dimensional flows possess inherent complexity that amplifies turbulence and vorticity mixing, a feature the 2D model cannot adequately capture.
+*   **Pressure Distribution:** Pressure distributions along the airfoil surface were not in close agreement. The 2D simulation ignores spanwise variations and boundary layer interactions, leading to an oversimplified aerodynamic profile.
+*   **Aerodynamic Drag:** The drag coefficient ($C_d$) was evaluated using the following relationship:
 
 $$
 C_d = \frac{F_d}{\frac{1}{2}\rho U^2 A}
 $$
 
-*   The 3D simulation captured a substantially higher maximum drag coefficient of 3.21, whereas the 2D simulation yielded a maximum of only 0.000086[cite: 1].
-*   The 3D simulation accurately captured larger variations in drag forces because the inclusion of spanwise flow variations more closely represents the surface area and physical geometry of real-world objects[cite: 1].
+*   The 3D simulation captured a substantially higher maximum drag coefficient of 3.21, whereas the 2D simulation yielded a maximum of only 0.000086.
+*   The 3D simulation accurately captured larger variations in drag forces because the inclusion of spanwise flow variations more closely represents the surface area and physical geometry of real-world objects.
 
-Ultimately, while 2D simulations offer simplified baseline insights, they cannot replace 3D simulations in capturing the full complexity of ethohydraulic phenomena[cite: 1].
+Ultimately, while 2D simulations offer simplified baseline insights, they cannot replace 3D simulations in capturing the full complexity of ethohydraulic phenomena.
