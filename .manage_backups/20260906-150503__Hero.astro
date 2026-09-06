@@ -89,7 +89,7 @@ import HUDPanel from "./HUDPanel.astro";
       );
     }
 
-    const COUNT = 400;
+    const COUNT = 260;
     type P = { x: number; y: number; life: number; maxLife: number; hue: "flow" | "vortex" };
     const particles: P[] = [];
 
@@ -122,7 +122,7 @@ import HUDPanel from "./HUDPanel.astro";
 
       for (const p of particles) {
         const angle = fieldAngle(p.x, p.y, t);
-        const speed = 1.2;
+        const speed = 1.15;
         const nx = p.x + Math.cos(angle) * speed;
         const ny = p.y + Math.sin(angle) * speed;
 
