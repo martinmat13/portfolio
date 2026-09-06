@@ -1,0 +1,47 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  entry: CollectionEntry<"collaborations">;
+}
+
+const { entry } = Astro.props;
+const { title, partner, role, summary, period, tags, link } = entry.data;
+---
+
+<BaseLayout title={title} description={summary}>
+  <article class="max-w-4xl mx-auto px-6 py-16">
+    <header class="border-b border-hairline pb-10">
+      <div class="flex flex-wrap items-center gap-3 font-mono text-xs text-ink-faint">
+        <span>{period}</span>
+        <span>·</span>
+        <span class="text-flow">{partner}</span>
+      </div>
+      <h1 class="mt-4 font-display text-4xl sm:text-5xl text-ink tracking-tight">{title}</h1>
+      <p class="mt-4 font-mono text-sm text-flow">{role}</p>
+      <p class="mt-5 text-lg text-ink-muted max-w-2xl leading-relaxed">{summary}</p>
+      {link && (
+        <a href={link} target="_blank" rel="noopener" class="mt-6 inline-block font-mono text-xs text-ink-muted hover:text-flow transition-colors">
+          External project link <span aria-hidden="true">↗</span>
+        </a>
+      )}
+    </header>
+
+    <div class="prose prose-invert prose-headings:font-display prose-headings:tracking-tight prose-a:text-flow prose-code:font-mono prose-code:text-vortex prose-strong:text-ink max-w-none mt-12">
+      <slot />
+    </div>
+
+    {tags.length > 0 && (
+      <div class="mt-12 pt-6 border-t border-hairline flex flex-wrap gap-2">
+        {tags.map((tag) => <span class="font-mono text-xs text-ink-faint">#{tag}</span>)}
+      </div>
+    )}
+
+    <div class="mt-16">
+      <a href="/collaborations" class="font-mono text-sm text-ink-muted hover:text-flow transition-colors">
+        ← Back to all collaborations
+      </a>
+    </div>
+  </article>
+</BaseLayout>
