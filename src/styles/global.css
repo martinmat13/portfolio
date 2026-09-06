@@ -140,6 +140,20 @@
   color: theme("colors.ink.DEFAULT");
   font-size: 1.05em;
 }
+.katex-mathml {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.katex-html {
+  display: inline-block;
+}
 .katex-display {
   @apply my-6 overflow-x-auto overflow-y-hidden py-2;
 }
