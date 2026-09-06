@@ -44,6 +44,7 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
           metrics={featuredProject.data.metrics}
           status={featuredProject.data.status}
           date={featuredProject.data.date}
+          coverImage={featuredProject.data.coverImage}
           featured
         />
       </div>
@@ -68,6 +69,7 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
               metrics={p.data.metrics}
               status={p.data.status}
               date={p.data.date}
+              coverImage={p.data.coverImage}
             />
           ))}
         </div>

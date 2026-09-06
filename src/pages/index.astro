@@ -34,6 +34,7 @@ const latestStory = (await getCollection("stories")).sort(
           stack={p.data.stack}
           status={p.data.status}
           date={p.data.date}
+          coverImage={p.data.coverImage}
         />
       ))}
     </div>

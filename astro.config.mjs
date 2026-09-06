@@ -10,7 +10,7 @@ import rehypeKatex from "rehype-katex";
 // and for absolute OpenGraph URLs to resolve correctly.
 // ---------------------------------------------------------------------------
 export default defineConfig({
-  site: "https://your-domain-or-vercel-subdomain.vercel.app",
+  site: "https://portfolio-martin-mathew.vercel.app",
   integrations: [
     tailwind({ applyBaseStyles: false }),
     mdx(),
