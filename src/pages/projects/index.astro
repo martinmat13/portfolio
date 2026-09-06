@@ -6,36 +6,72 @@ import { getCollection } from "astro:content";
 const projects = (await getCollection("projects")).sort(
   (a, b) => a.data.order - b.data.order || b.data.date.valueOf() - a.data.date.valueOf()
 );
+const featuredProject = projects.find((project) => project.data.featured) ?? projects[0];
+const supportingProjects = projects.filter((project) => project !== featuredProject);
 ---
 
 <BaseLayout
   title="Projects"
   description="CFD, numerical simulation, and engineering research projects — OpenFOAM, ANSYS Fluent, LIGGGHTS."
 >
-  <section class="max-w-6xl mx-auto px-6 py-20">
-    <header class="mb-10 border-b border-hairline pb-8">
-      <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
-        Projects
-      </h1>
-      <p class="mt-4 text-ink-muted max-w-xl leading-relaxed">
-        Numerical simulation and engineering research. Each row is a
-        self-contained study — add a new one by dropping an .mdx file into
-        <code class="font-mono text-vortex">src/content/projects/</code>.
-      </p>
+  <section class="max-w-6xl mx-auto px-6 py-16 sm:py-20">
+    <header class="grid lg:grid-cols-[1fr_auto] gap-8 items-end border-b border-hairline pb-10">
+      <div>
+        <p class="font-mono text-xs uppercase tracking-[0.18em] text-flow">Research index / 0{projects.length}</p>
+        <h1 class="mt-4 font-display text-4xl sm:text-5xl text-ink tracking-tight">Projects</h1>
+        <p class="mt-4 text-ink-muted max-w-xl leading-relaxed">
+          Numerical simulation and engineering research, recorded as studies with
+          reproducible methods, operating conditions, and observed results.
+        </p>
+      </div>
+      <p class="font-mono text-xs text-ink-faint lg:text-right">CFD / DEM / MULTIPHASE</p>
     </header>
 
-    <div>
-      {projects.map((p, i) => (
+    {featuredProject && (
+      <div class="project-feature mt-10">
+        <div class="project-feature__signal" aria-hidden="true">
+          <span class="project-feature__line"></span>
+          <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-vortex">Featured study</span>
+        </div>
         <ProjectRow
-          index={i + 1}
-          href={`/projects/${p.slug}`}
-          title={p.data.title}
-          summary={p.data.summary}
-          stack={p.data.stack}
-          status={p.data.status}
-          date={p.data.date}
+          index={1}
+          href={`/projects/${featuredProject.slug}`}
+          title={featuredProject.data.title}
+          summary={featuredProject.data.summary}
+          stack={featuredProject.data.stack}
+          tags={featuredProject.data.tags}
+          solver={featuredProject.data.solver}
+          metrics={featuredProject.data.metrics}
+          status={featuredProject.data.status}
+          date={featuredProject.data.date}
+          featured
         />
-      ))}
-    </div>
+      </div>
+    )}
+
+    {supportingProjects.length > 0 && (
+      <div class="mt-14">
+        <div class="flex items-center justify-between gap-4 mb-2">
+          <h2 class="font-mono text-xs uppercase tracking-[0.18em] text-ink-faint">All studies</h2>
+          <span class="font-mono text-xs text-ink-faint">{String(supportingProjects.length).padStart(2, "0")} records</span>
+        </div>
+        <div>
+          {supportingProjects.map((p, i) => (
+            <ProjectRow
+              index={i + 2}
+              href={`/projects/${p.slug}`}
+              title={p.data.title}
+              summary={p.data.summary}
+              stack={p.data.stack}
+              tags={p.data.tags}
+              solver={p.data.solver}
+              metrics={p.data.metrics}
+              status={p.data.status}
+              date={p.data.date}
+            />
+          ))}
+        </div>
+      </div>
+    )}
   </section>
 </BaseLayout>
