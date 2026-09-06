@@ -1,0 +1,54 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+const collabs = (await getCollection("collaborations")).sort(
+  (a, b) => a.data.order - b.data.order
+);
+---
+
+<BaseLayout
+  title="Collaborations"
+  description="Academic and professional collaborations outside my core CFD focus."
+>
+  <section class="max-w-6xl mx-auto px-6 py-20">
+    <header class="mb-10 border-b border-hairline pb-8">
+      <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
+        Collaborations
+      </h1>
+      <p class="mt-4 text-ink-muted max-w-xl leading-relaxed">
+        Work done alongside other researchers, teams, and disciplines —
+        add a new one by dropping an .mdx file into
+        <code class="font-mono text-vortex">src/content/collaborations/</code>.
+      </p>
+    </header>
+
+    <div class="grid sm:grid-cols-2 gap-6">
+      {collabs.map((c) => (
+        <div class="border border-hairline rounded-lg p-6 hover:border-flow/40 transition-colors">
+          <p class="font-mono text-xs text-ink-faint">{c.data.period}</p>
+          <h3 class="font-display text-xl text-ink mt-2">{c.data.title}</h3>
+          <p class="font-mono text-xs text-flow mt-1">
+            {c.data.partner} — {c.data.role}
+          </p>
+          <p class="mt-3 text-ink-muted leading-relaxed">{c.data.summary}</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {c.data.tags.map((t) => (
+              <span class="font-mono text-xs text-ink-faint">#{t}</span>
+            ))}
+          </div>
+          {c.data.link && (
+            <a
+              href={c.data.link}
+              target="_blank"
+              rel="noopener"
+              class="mt-4 inline-block font-mono text-xs text-ink-muted hover:text-flow transition-colors"
+            >
+              Learn more ↗
+            </a>
+          )}
+        </div>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

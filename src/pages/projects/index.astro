@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ProjectRow from "../../components/ProjectRow.astro";
+import { getCollection } from "astro:content";
+
+const projects = (await getCollection("projects")).sort(
+  (a, b) => a.data.order - b.data.order || b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<BaseLayout
+  title="Projects"
+  description="CFD, numerical simulation, and engineering research projects — OpenFOAM, ANSYS Fluent, LIGGGHTS."
+>
+  <section class="max-w-6xl mx-auto px-6 py-20">
+    <header class="mb-10 border-b border-hairline pb-8">
+      <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
+        Projects
+      </h1>
+      <p class="mt-4 text-ink-muted max-w-xl leading-relaxed">
+        Numerical simulation and engineering research. Each row is a
+        self-contained study — add a new one by dropping an .mdx file into
+        <code class="font-mono text-vortex">src/content/projects/</code>.
+      </p>
+    </header>
+
+    <div>
+      {projects.map((p, i) => (
+        <ProjectRow
+          index={i + 1}
+          href={`/projects/${p.slug}`}
+          title={p.data.title}
+          summary={p.data.summary}
+          stack={p.data.stack}
+          status={p.data.status}
+          date={p.data.date}
+        />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,19 @@
+---
+// Wrapper for a LaTeX-style equation with an optional caption.
+// KaTeX rendering itself is handled globally via remark-math + rehype-katex,
+// so in MDX content you just write $$ ... $$ directly. This component is
+// for cases where you want an equation with a numbered/captioned frame,
+// e.g. inside a plain .astro page rather than MDX prose.
+interface Props {
+  caption?: string;
+}
+const { caption } = Astro.props;
+---
+<figure class="my-6 border border-hairline rounded-lg bg-void-raised/40 p-5 overflow-x-auto">
+  <div class="text-ink">
+    <slot />
+  </div>
+  {caption && (
+    <figcaption class="mt-3 font-mono text-xs text-ink-faint">{caption}</figcaption>
+  )}
+</figure>

@@ -1,0 +1,4 @@
+Replace this folder's contents with your real CV as `martin-cv.pdf`.
+The Header, Footer, and About page already link to /cv/martin-cv.pdf —
+just drop the file in here with that exact name and the download
+buttons will work with no code changes.

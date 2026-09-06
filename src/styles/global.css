@@ -1,0 +1,81 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-void text-ink font-body antialiased;
+    background-image: radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      rgba(0, 229, 255, 0.06),
+      transparent
+    );
+  }
+  ::selection {
+    @apply bg-flow/30 text-white;
+  }
+
+  /* Visible keyboard focus everywhere — accessibility floor */
+  :focus-visible {
+    outline: 2px solid theme("colors.flow.DEFAULT");
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Glass panel — used for the HUD telemetry readout and nav */
+  .glass-panel {
+    @apply bg-glass backdrop-blur-md border border-hairline;
+  }
+
+  /* Blueprint grid backdrop, used sparingly (hero + section transitions) */
+  .blueprint-grid {
+    background-image: theme("backgroundImage.grid-fade");
+    background-size: theme("backgroundSize.grid");
+  }
+
+  /* Spec-sheet row divider used in the project list */
+  .spec-row {
+    @apply border-t border-hairline;
+  }
+  .spec-row:last-child {
+    @apply border-b;
+  }
+
+  .glow-text-flow {
+    text-shadow: 0 0 18px rgba(0, 229, 255, 0.45);
+  }
+  .glow-text-vortex {
+    text-shadow: 0 0 18px rgba(255, 122, 26, 0.45);
+  }
+
+  .tech-pill {
+    @apply font-mono text-xs tracking-tight text-ink-muted border border-hairline rounded px-2 py-1;
+  }
+}
+
+/* KaTeX rendering tweaks so equations sit naturally in the dark theme */
+.katex {
+  color: theme("colors.ink.DEFAULT");
+  font-size: 1.05em;
+}
+.katex-display {
+  @apply my-6 overflow-x-auto overflow-y-hidden py-2;
+}

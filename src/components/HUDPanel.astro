@@ -1,0 +1,32 @@
+---
+// These are illustrative placeholders — wire them to real numbers,
+// or a specific project's metrics, whenever you like.
+const readouts = [
+  { label: "Re", value: "4.2 × 10⁵" },
+  { label: "y+", value: "≈ 1.0" },
+  { label: "mesh cells", value: "2.1M" },
+  { label: "solver", value: "simpleFoam" },
+];
+---
+
+<div
+  class="glass-panel rounded-lg p-5 w-full sm:w-72 font-mono text-xs text-ink-muted"
+>
+  <div class="flex items-center justify-between mb-4">
+    <span class="text-ink-faint">SIM STATUS</span>
+    <span class="flex items-center gap-1.5 text-flow">
+      <span class="w-1.5 h-1.5 rounded-full bg-flow animate-pulse-slow"></span>
+      converged
+    </span>
+  </div>
+  <dl class="grid grid-cols-2 gap-y-3">
+    {
+      readouts.map((r) => (
+        <>
+          <dt class="text-ink-faint">{r.label}</dt>
+          <dd class="text-right text-ink">{r.value}</dd>
+        </>
+      ))
+    }
+  </dl>
+</div>

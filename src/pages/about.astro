@@ -1,0 +1,53 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const links = [
+  { label: "GitHub", href: "https://github.com/your-username" },
+  { label: "LinkedIn", href: "https://linkedin.com/in/your-profile" },
+  { label: "Google Scholar", href: "https://scholar.google.com/citations?user=your-id" },
+  { label: "Email", href: "mailto:you@example.com" },
+];
+---
+
+<BaseLayout title="About" description="Bio, contact links, and CV.">
+  <section class="max-w-3xl mx-auto px-6 py-20">
+    <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
+      About
+    </h1>
+
+    <div class="prose prose-invert prose-a:text-flow max-w-none mt-8">
+      <p>
+        I'm an engineer working at the intersection of computational fluid
+        dynamics, hydrodynamics, and numerical modelling — building solvers,
+        tuning turbulence models, and chasing convergence in OpenFOAM, ANSYS
+        Fluent, and LIGGGHTS. Replace this paragraph with your real bio:
+        current role, research focus, and what you're aiming at next
+        (PhD, industry, both).
+      </p>
+      <p>
+        Outside the mesh, I spend time around railways and behind a camera —
+        see <a href="/stories">Stories</a> for that side of things.
+      </p>
+    </div>
+
+    <div class="mt-10 flex flex-wrap gap-4">
+      {links.map((l) => (
+        <a
+          href={l.href}
+          target="_blank"
+          rel="noopener"
+          class="font-mono text-sm border border-hairline px-4 py-2 rounded text-ink-muted hover:text-flow hover:border-flow/40 transition-colors"
+        >
+          {l.label}
+        </a>
+      ))}
+      <a
+        href="/cv/martin-cv.pdf"
+        download
+        class="font-mono text-sm bg-flow text-void px-4 py-2 rounded shadow-glow-flow hover:brightness-110 transition"
+      >
+        Download CV
+      </a>
+    </div>
+  </section>
+</BaseLayout>

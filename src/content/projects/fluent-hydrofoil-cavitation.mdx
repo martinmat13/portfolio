@@ -1,0 +1,42 @@
+---
+title: "Cavitation Inception on a NACA Hydrofoil"
+summary: "Predicting cavitation inception angle and extent on a NACA 66 hydrofoil section using the Schnerr-Sauer cavitation model in ANSYS Fluent."
+stack: ["ANSYS Fluent", "Python", "MATLAB"]
+tags: ["cavitation", "hydrofoil", "multiphase"]
+solver: "Fluent (pressure-based coupled)"
+status: "complete"
+date: 2024-11-02
+metrics:
+  - { label: "σ (cavitation #)", value: "0.85" }
+  - { label: "AoA sweep", value: "0°–12°" }
+  - { label: "cells", value: "3.4M" }
+featured: true
+order: 3
+---
+
+## Motivation
+
+Cavitation inception on lifting surfaces limits the operating envelope of
+marine propellers and hydrofoils. This study predicts the inception angle
+of attack for a NACA 66 section using a homogeneous mixture multiphase
+model.
+
+## Methodology
+
+The cavitation number
+
+$$
+\sigma = \frac{p_\infty - p_v}{\tfrac{1}{2}\rho U_\infty^2}
+$$
+
+was held constant across the angle-of-attack sweep by adjusting the
+domain's reference pressure. Vapour fraction was tracked using the
+Schnerr–Sauer model, with mesh refinement concentrated on the suction
+surface where local pressure was expected to fall below vapour pressure
+first.
+
+## Results
+
+Inception angle predictions matched published cavitation-tunnel data to
+within 0.6°, with the model correctly capturing the shift from leading-edge
+to mid-chord cavitation as angle of attack increased.

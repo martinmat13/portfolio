@@ -1,0 +1,110 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import TechBadge from "../components/TechBadge.astro";
+import Gallery from "../components/Gallery.astro";
+import { Image } from "astro:assets";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  entry: CollectionEntry<"projects">;
+}
+const { entry } = Astro.props;
+const { title, summary, stack, tags, solver, status, date, metrics, coverImage, gallery, repoUrl, paperUrl } =
+  entry.data;
+
+const year = date.getFullYear();
+---
+
+<BaseLayout title={title} description={summary}>
+  <article class="max-w-4xl mx-auto px-6 py-16">
+    <!-- ======================= TITLE + META ======================= -->
+    <header class="border-b border-hairline pb-10">
+      <div class="flex flex-wrap items-center gap-3 font-mono text-xs text-ink-faint">
+        <span>{year}</span>
+        <span>·</span>
+        <span class={status === "ongoing" ? "text-flow" : ""}>{status}</span>
+        {solver && (
+          <>
+            <span>·</span>
+            <span>{solver}</span>
+          </>
+        )}
+      </div>
+      <h1 class="mt-4 font-display text-4xl sm:text-5xl text-ink tracking-tight">
+        {title}
+      </h1>
+      <p class="mt-4 text-lg text-ink-muted max-w-2xl leading-relaxed">
+        {summary}
+      </p>
+
+      <!-- ==================== TECH STACK ==================== -->
+      <div class="mt-6 flex flex-wrap gap-2">
+        {stack.map((s) => <TechBadge label={s} />)}
+      </div>
+
+      <!-- ==================== METRICS / HUD STRIP ==================== -->
+      {metrics.length > 0 && (
+        <dl class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-4 glass-panel rounded-lg p-4">
+          {metrics.map((m) => (
+            <div>
+              <dt class="font-mono text-xs text-ink-faint">{m.label}</dt>
+              <dd class="font-mono text-lg text-flow mt-1">{m.value}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      <!-- ==================== LINKS ==================== -->
+      <div class="mt-6 flex gap-4 font-mono text-xs">
+        {repoUrl && (
+          <a href={repoUrl} class="text-ink-muted hover:text-flow transition-colors" target="_blank" rel="noopener">
+            Repository ↗
+          </a>
+        )}
+        {paperUrl && (
+          <a href={paperUrl} class="text-ink-muted hover:text-flow transition-colors" target="_blank" rel="noopener">
+            Paper / write-up ↗
+          </a>
+        )}
+      </div>
+    </header>
+
+    <!-- ==================== COVER / 3D VISUALISATION ==================== -->
+    {coverImage && (
+      <div class="mt-10 rounded-lg overflow-hidden border border-hairline">
+        <Image src={coverImage} alt={`${title} — visualisation`} widths={[600, 1200, 1800]} sizes="100vw" />
+      </div>
+    )}
+
+    <!-- ==================== METHODOLOGY / EQUATIONS / BODY ====================
+         The MDX body (methodology text, y+ tracking, PID control notes,
+         $$ ... $$ LaTeX blocks via remark-math + rehype-katex, code blocks,
+         etc.) renders here through Tailwind Typography, tuned for the
+         dark theme in global.css / tailwind.config.mjs. -->
+    <div
+      class="prose prose-invert prose-headings:font-display prose-headings:tracking-tight
+             prose-a:text-flow prose-code:font-mono prose-code:text-vortex
+             prose-strong:text-ink max-w-none mt-12"
+    >
+      <slot />
+    </div>
+
+    <!-- ==================== GALLERY ==================== -->
+    <Gallery images={gallery} alt={title} />
+
+    <!-- ==================== TAGS ==================== -->
+    {tags.length > 0 && (
+      <div class="mt-12 pt-6 border-t border-hairline flex flex-wrap gap-2">
+        {tags.map((t) => (
+          <span class="font-mono text-xs text-ink-faint">#{t}</span>
+        ))}
+      </div>
+    )}
+
+    <div class="mt-16">
+      <a href="/projects" class="font-mono text-sm text-ink-muted hover:text-flow transition-colors">
+        ← Back to all projects
+      </a>
+    </div>
+  </article>
+</BaseLayout>

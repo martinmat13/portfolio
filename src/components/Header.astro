@@ -1,0 +1,101 @@
+---
+const nav = [
+  { href: "/projects", label: "Projects" },
+  { href: "/collaborations", label: "Collaborations" },
+  { href: "/stories", label: "Stories" },
+  { href: "/about", label: "About" },
+];
+const path = Astro.url.pathname;
+---
+
+<header class="sticky top-0 z-50">
+  <div class="glass-panel">
+    <nav
+      class="max-w-6xl mx-auto flex items-center justify-between px-6 py-4"
+    >
+      <a
+        href="/"
+        class="font-display text-lg tracking-tight text-ink hover:text-flow transition-colors"
+      >
+        martin<span class="text-flow">.</span>sim
+      </a>
+
+      <ul class="hidden sm:flex items-center gap-8 font-mono text-sm">
+        {
+          nav.map((item) => {
+            const active = path.startsWith(item.href);
+            return (
+              <li>
+                <a
+                  href={item.href}
+                  class:list={[
+                    "transition-colors hover:text-flow",
+                    active ? "text-flow" : "text-ink-muted",
+                  ]}
+                >
+                  {item.label}
+                </a>
+              </li>
+            );
+          })
+        }
+      </ul>
+
+      <a
+        href="/cv/martin-cv.pdf"
+        class="hidden sm:inline-flex items-center gap-2 font-mono text-xs border border-hairline rounded px-3 py-2 text-ink-muted hover:text-flow hover:border-flow/50 transition-colors"
+        download
+      >
+        CV
+      </a>
+
+      <!-- mobile nav toggle -->
+      <button
+        id="nav-toggle"
+        class="sm:hidden text-ink-muted"
+        aria-label="Toggle navigation menu"
+        aria-expanded="false"
+      >
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path
+            d="M3 6h16M3 11h16M3 16h16"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+    </nav>
+
+    <ul
+      id="mobile-nav"
+      class="sm:hidden hidden flex-col gap-1 px-6 pb-4 font-mono text-sm"
+    >
+      {
+        nav.map((item) => (
+          <li>
+            <a href={item.href} class="block py-2 text-ink-muted hover:text-flow">
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <a href="/cv/martin-cv.pdf" class="block py-2 text-ink-muted hover:text-flow" download>
+          Download CV
+        </a>
+      </li>
+    </ul>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById("nav-toggle");
+  const menu = document.getElementById("mobile-nav");
+  toggle?.addEventListener("click", () => {
+    const isOpen = !menu?.classList.contains("hidden");
+    menu?.classList.toggle("hidden");
+    menu?.classList.toggle("flex");
+    toggle.setAttribute("aria-expanded", String(!isOpen));
+  });
+</script>

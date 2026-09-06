@@ -1,0 +1,27 @@
+---
+const year = new Date().getFullYear();
+
+// Update these once — every page pulls from here.
+const links = {
+  github: "https://github.com/your-username",
+  linkedin: "https://linkedin.com/in/your-profile",
+  youtube: "https://youtube.com/@your-channel",
+  email: "mailto:you@example.com",
+};
+---
+
+<footer class="border-t border-hairline mt-24">
+  <div
+    class="max-w-6xl mx-auto px-6 py-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+  >
+    <p class="font-mono text-xs text-ink-faint">
+      © {year} · Built with Astro & Tailwind · Streamlines don't lie.
+    </p>
+    <div class="flex gap-6 font-mono text-xs text-ink-muted">
+      <a href={links.github} class="hover:text-flow transition-colors">GitHub</a>
+      <a href={links.linkedin} class="hover:text-flow transition-colors">LinkedIn</a>
+      <a href={links.youtube} class="hover:text-vortex transition-colors">YouTube</a>
+      <a href={links.email} class="hover:text-flow transition-colors">Email</a>
+    </div>
+  </div>
+</footer>

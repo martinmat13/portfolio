@@ -1,0 +1,27 @@
+---
+import { Image } from "astro:assets";
+
+interface Props {
+  images: any[]; // ImageMetadata[] from content collection `image()` fields
+  alt?: string;
+}
+const { images, alt = "" } = Astro.props;
+---
+
+{
+  images?.length > 0 && (
+    <div class="grid sm:grid-cols-2 gap-3 my-6">
+      {images.map((img, i) => (
+        <div class="rounded-lg overflow-hidden border border-hairline">
+          <Image
+            src={img}
+            alt={`${alt} — view ${i + 1}`}
+            class="w-full h-full object-cover hover:scale-[1.02] transition-transform duration-300"
+            widths={[400, 800, 1200]}
+            sizes="(min-width: 640px) 50vw, 100vw"
+          />
+        </div>
+      ))}
+    </div>
+  )
+}

@@ -1,0 +1,60 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import YouTubeEmbed from "../../components/YouTubeEmbed.astro";
+import Gallery from "../../components/Gallery.astro";
+import { getCollection } from "astro:content";
+
+const stories = (await getCollection("stories")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<BaseLayout
+  title="Stories"
+  description="Trainspotting, humour, photography, and narrative alongside the technical work."
+>
+  <section class="max-w-4xl mx-auto px-6 py-20">
+    <header class="mb-12 border-b border-hairline pb-8">
+      <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
+        Stories
+      </h1>
+      <p class="mt-4 text-ink-muted max-w-xl leading-relaxed">
+        Trains, humour, photography, and the narrative side of things.
+        New entries: drop an .mdx file into
+        <code class="font-mono text-vortex">src/content/stories/</code> —
+        video, photo, or writing.
+      </p>
+    </header>
+
+    <div class="space-y-20">
+      {stories.map(async (s) => {
+        const { Content } = await s.render();
+        return (
+          <article id={s.slug} class="scroll-mt-24">
+            <div class="flex items-center gap-3 font-mono text-xs text-ink-faint mb-3">
+              <span>{s.data.date.toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" })}</span>
+              <span>·</span>
+              <span class={s.data.kind === "video" ? "text-vortex" : "text-flow"}>
+                {s.data.kind}
+              </span>
+            </div>
+            <h2 class="font-display text-2xl text-ink">{s.data.title}</h2>
+            <p class="mt-2 text-ink-muted">{s.data.summary}</p>
+
+            {s.data.kind === "video" && s.data.youtubeId && (
+              <div class="mt-6">
+                <YouTubeEmbed youtubeId={s.data.youtubeId} title={s.data.title} />
+              </div>
+            )}
+
+            {s.data.kind === "photo" && <Gallery images={s.data.gallery} alt={s.data.title} />}
+
+            <div class="prose prose-invert prose-a:text-flow max-w-none mt-6">
+              <Content />
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
+</BaseLayout>

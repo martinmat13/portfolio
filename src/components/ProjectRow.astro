@@ -1,0 +1,50 @@
+---
+import TechBadge from "./TechBadge.astro";
+
+interface Props {
+  index: number;
+  href: string;
+  title: string;
+  summary: string;
+  stack: string[];
+  status: "ongoing" | "complete" | "archived";
+  date: Date;
+}
+const { index, href, title, summary, stack, status, date } = Astro.props;
+
+const statusColor =
+  status === "ongoing"
+    ? "text-flow"
+    : status === "complete"
+      ? "text-ink-muted"
+      : "text-ink-faint";
+
+const year = date.getFullYear();
+---
+
+<a href={href} class="group block spec-row">
+  <div
+    class="grid sm:grid-cols-[3rem_1fr_auto] gap-4 sm:gap-8 items-start py-7"
+  >
+    <span class="font-mono text-sm text-ink-faint pt-1">
+      {String(index).padStart(2, "0")}
+    </span>
+
+    <div>
+      <h3
+        class="font-display text-2xl text-ink group-hover:text-flow transition-colors"
+      >
+        {title}
+      </h3>
+      <p class="mt-2 text-ink-muted max-w-xl leading-relaxed">{summary}</p>
+      <div class="mt-4 flex flex-wrap gap-2">
+        {stack.slice(0, 5).map((s) => <TechBadge label={s} />)}
+      </div>
+    </div>
+
+    <div class="text-right font-mono text-xs shrink-0">
+      <p class={statusColor}>{status}</p>
+      <p class="text-ink-faint mt-1">{year}</p>
+    </div>
+  </div>
+</a>
