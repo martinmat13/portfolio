@@ -76,6 +76,53 @@
     @apply h-px w-8 bg-vortex;
   }
 
+  .fluid-reveal {
+    --fluid-delay: 0ms;
+  }
+  .js .fluid-reveal {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0);
+    clip-path: inset(0 0 12% 0);
+    transition:
+      opacity 700ms cubic-bezier(0.22, 1, 0.36, 1) var(--fluid-delay),
+      transform 700ms cubic-bezier(0.22, 1, 0.36, 1) var(--fluid-delay),
+      clip-path 700ms cubic-bezier(0.22, 1, 0.36, 1) var(--fluid-delay);
+    will-change: opacity, transform, clip-path;
+  }
+  .js .fluid-reveal--visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    clip-path: inset(0 0 0 0);
+  }
+  .fluid-reveal::after {
+    content: "";
+    display: block;
+    height: 1px;
+    margin-top: 1.25rem;
+    transform: scaleX(0);
+    transform-origin: left;
+    background: linear-gradient(90deg, theme("colors.flow.DEFAULT"), transparent);
+    transition: transform 900ms cubic-bezier(0.22, 1, 0.36, 1) calc(var(--fluid-delay) + 160ms);
+  }
+  .fluid-reveal--visible::after {
+    transform: scaleX(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .js .fluid-reveal,
+    .js .fluid-reveal--visible {
+      opacity: 1;
+      transform: none;
+      clip-path: none;
+      transition: none;
+    }
+    .fluid-reveal::after,
+    .fluid-reveal--visible::after {
+      transform: scaleX(1);
+      transition: none;
+    }
+  }
+
   .glow-text-flow {
     text-shadow: 0 0 18px rgba(0, 229, 255, 0.45);
   }

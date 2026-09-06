@@ -19,7 +19,7 @@ const pageTitle = `${title} · Martin`;
 ---
 
 <!doctype html>
-<html lang="en" class="scroll-smooth">
+<html lang="en" class="scroll-smooth js">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -42,5 +42,20 @@ const pageTitle = `${title} · Martin`;
       <slot />
     </main>
     <Footer />
+    <script>
+      const revealItems = document.querySelectorAll<HTMLElement>("[data-fluid-reveal]");
+      const revealObserver = new IntersectionObserver(
+        (entries, observer) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("fluid-reveal--visible");
+            observer.unobserve(entry.target);
+          });
+        },
+        { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+      );
+
+      revealItems.forEach((item) => revealObserver.observe(item));
+    </script>
   </body>
 </html>

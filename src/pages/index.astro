@@ -17,7 +17,7 @@ const latestStory = (await getCollection("stories")).sort(
 <BaseLayout title="Home">
   <Hero />
 
-  <section class="max-w-6xl mx-auto px-6 py-20">
+  <section class="fluid-reveal max-w-6xl mx-auto px-6 py-20" data-fluid-reveal>
     <div class="flex items-end justify-between mb-2">
       <h2 class="font-display text-3xl text-ink">Featured work</h2>
       <a href="/projects" class="font-mono text-sm text-ink-muted hover:text-flow transition-colors">

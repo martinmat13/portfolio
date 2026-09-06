@@ -18,7 +18,7 @@ const renderedCollabs = await Promise.all(
   description="Academic and professional collaborations outside my core CFD focus."
 >
   <section class="max-w-6xl mx-auto px-6 py-20">
-    <header class="mb-10 border-b border-hairline pb-8">
+    <header class="fluid-reveal mb-10 border-b border-hairline pb-8" data-fluid-reveal>
       <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
         Collaborations
       </h1>
@@ -30,10 +30,12 @@ const renderedCollabs = await Promise.all(
     </header>
 
     <div class="grid sm:grid-cols-2 gap-6">
-      {renderedCollabs.map(({ entry, Content }) => (
+      {renderedCollabs.map(({ entry, Content }, index) => (
         <a
           href={`/collaborations/${entry.slug}`}
-          class="group block border border-hairline rounded-lg p-6 hover:border-flow/40 hover:bg-void-raised transition-colors"
+          class="fluid-reveal group block border border-hairline rounded-lg p-6 hover:border-flow/40 hover:bg-void-raised transition-colors"
+          style={`--fluid-delay: ${index * 100}ms`}
+          data-fluid-reveal
         >
           <p class="font-mono text-xs text-ink-faint">{entry.data.period}</p>
           <h2 class="font-display text-xl text-ink mt-2 group-hover:text-flow transition-colors">

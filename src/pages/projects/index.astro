@@ -15,7 +15,7 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
   description="CFD, numerical simulation, and engineering research projects — OpenFOAM, ANSYS Fluent, LIGGGHTS."
 >
   <section class="max-w-6xl mx-auto px-6 py-16 sm:py-20">
-    <header class="grid lg:grid-cols-[1fr_auto] gap-8 items-end border-b border-hairline pb-10">
+    <header class="fluid-reveal grid lg:grid-cols-[1fr_auto] gap-8 items-end border-b border-hairline pb-10" data-fluid-reveal>
       <div>
         <p class="font-mono text-xs uppercase tracking-[0.18em] text-flow">Research index / 0{projects.length}</p>
         <h1 class="mt-4 font-display text-4xl sm:text-5xl text-ink tracking-tight">Projects</h1>
@@ -28,7 +28,7 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
     </header>
 
     {featuredProject && (
-      <div class="project-feature mt-10">
+      <div class="project-feature fluid-reveal mt-10" style="--fluid-delay: 100ms" data-fluid-reveal>
         <div class="project-feature__signal" aria-hidden="true">
           <span class="project-feature__line"></span>
           <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-vortex">Featured study</span>
@@ -50,7 +50,7 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
     )}
 
     {supportingProjects.length > 0 && (
-      <div class="mt-14">
+      <div class="fluid-reveal mt-14" style="--fluid-delay: 180ms" data-fluid-reveal>
         <div class="flex items-center justify-between gap-4 mb-2">
           <h2 class="font-mono text-xs uppercase tracking-[0.18em] text-ink-faint">All studies</h2>
           <span class="font-mono text-xs text-ink-faint">{String(supportingProjects.length).padStart(2, "0")} records</span>

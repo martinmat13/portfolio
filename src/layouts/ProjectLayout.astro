@@ -18,7 +18,7 @@ const year = date.getFullYear();
 <BaseLayout title={title} description={summary}>
   <article class="max-w-4xl mx-auto px-6 py-16">
     <!-- ======================= TITLE + META ======================= -->
-    <header class="border-b border-hairline pb-10">
+    <header class="fluid-reveal border-b border-hairline pb-10" data-fluid-reveal>
       <div class="flex flex-wrap items-center gap-3 font-mono text-xs text-ink-faint">
         <span>{year}</span>
         <span>·</span>
@@ -71,7 +71,7 @@ const year = date.getFullYear();
 
     <!-- ==================== COVER / 3D VISUALISATION ==================== -->
     {coverImage && (
-      <div class="mt-10 rounded-lg overflow-hidden border border-hairline">
+      <div class="fluid-reveal mt-10 rounded-lg overflow-hidden border border-hairline" style="--fluid-delay: 100ms" data-fluid-reveal>
         <Image src={coverImage} alt={`${title} — visualisation`} widths={[600, 1200, 1800]} sizes="100vw" />
       </div>
     )}
@@ -82,19 +82,23 @@ const year = date.getFullYear();
          etc.) renders here through Tailwind Typography, tuned for the
          dark theme in global.css / tailwind.config.mjs. -->
     <div
-      class="prose prose-invert prose-headings:font-display prose-headings:tracking-tight
+      class="fluid-reveal prose prose-invert prose-headings:font-display prose-headings:tracking-tight
              prose-a:text-flow prose-code:font-mono prose-code:text-vortex
              prose-strong:text-ink max-w-none mt-12"
+      style="--fluid-delay: 180ms"
+      data-fluid-reveal
     >
       <slot />
     </div>
 
     <!-- ==================== GALLERY ==================== -->
-    <Gallery images={gallery} alt={title} />
+    <div class="fluid-reveal" style="--fluid-delay: 260ms" data-fluid-reveal>
+      <Gallery images={gallery} alt={title} />
+    </div>
 
     <!-- ==================== TAGS ==================== -->
     {tags.length > 0 && (
-      <div class="mt-12 pt-6 border-t border-hairline flex flex-wrap gap-2">
+      <div class="fluid-reveal mt-12 pt-6 border-t border-hairline flex flex-wrap gap-2" style="--fluid-delay: 320ms" data-fluid-reveal>
         {tags.map((t) => (
           <span class="font-mono text-xs text-ink-faint">#{t}</span>
         ))}

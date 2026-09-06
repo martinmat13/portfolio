@@ -12,7 +12,7 @@ const { title, partner, role, summary, period, tags, link } = entry.data;
 
 <BaseLayout title={title} description={summary}>
   <article class="max-w-4xl mx-auto px-6 py-16">
-    <header class="border-b border-hairline pb-10">
+    <header class="fluid-reveal border-b border-hairline pb-10" data-fluid-reveal>
       <div class="flex flex-wrap items-center gap-3 font-mono text-xs text-ink-faint">
         <span>{period}</span>
         <span>·</span>
@@ -28,7 +28,7 @@ const { title, partner, role, summary, period, tags, link } = entry.data;
       )}
     </header>
 
-    <div class="prose prose-invert prose-headings:font-display prose-headings:tracking-tight prose-a:text-flow prose-code:font-mono prose-code:text-vortex prose-strong:text-ink max-w-none mt-12">
+    <div class="fluid-reveal prose prose-invert prose-headings:font-display prose-headings:tracking-tight prose-a:text-flow prose-code:font-mono prose-code:text-vortex prose-strong:text-ink max-w-none mt-12" style="--fluid-delay: 160ms" data-fluid-reveal>
       <slot />
     </div>
 
