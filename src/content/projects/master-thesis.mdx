@@ -1,0 +1,77 @@
+---
+title: "On the Hydrodynamics of Foiling Craft: PID Control System Development"
+summary: "Development of a coupled CFD-PID control framework to regulate hydrofoil angle of attack for stable ride height and trim under steady, unsteady, and multiphase flow conditions."
+stack: ["STAR-CCM+", "Java", "Simulink", "MATLAB"]
+tags: ["Hydrofoil", "CFD", "PID Control", "Multiphase Flow", "DFBI"]
+solver: "STAR-CCM+"
+status: "complete"
+date: 2025-03-01
+metrics:
+  - { label: "system mass", value: "10 kg" }
+  - { label: "target ride height", value: "0.1 m" }
+  - { label: "AoA range", value: "-8° to 10°" }
+featured: true
+order: 3
+# coverImage: "./images/hydrofoil-pid-control/cover.png"
+# gallery:
+#   - "./images/hydrofoil-pid-control/dfbi-setup.png"
+#   - "./images/hydrofoil-pid-control/lift-response.png"
+---
+
+## Motivation
+
+Hydrofoils play a crucial role in enhancing the efficiency of marine transport by reducing hydrodynamic drag, but maintaining stability under varying operational conditions remains a significant challenge[cite: 2]. Fully submerged hydrofoils provide greater stability in rough seas but are not inherently self-stabilizing, requiring active control mechanisms[cite: 2]. This research focuses on developing a control system using a Proportional-Integral-Derivative (PID) controller to regulate the hydrofoil's angle of attack (AoA), ensuring stable ride height and trim[cite: 2].
+
+## Methodology
+
+The project utilized a coupled Computational Fluid Dynamics (CFD) and PID control framework to evaluate hydrodynamic behavior under steady, unsteady, and multiphase flow conditions[cite: 2]. 
+
+*   **CFD & Multiphase Modeling:** Simulations were executed in STAR-CCM+ using the Volume of Fluid (VOF) method to capture the water-air interface and simulate wave effects[cite: 2]. A semi-2D setup was employed to maintain computational efficiency while approximating 3D multiphase behavior[cite: 2].
+*   **Dynamic Fluid-Body Interaction (DFBI):** The DFBI model was integrated to allow dynamic responses to hydrodynamic forces, specifically motion in heave (vertical ride height) and trim (pitch angle)[cite: 2]. 
+*   **Control System Integration:** The PID controller was embedded directly into STAR-CCM+ using a custom Java Macro script[cite: 2]. This allowed the CFD solver and the control algorithm to interact seamlessly, adjusting the AoA dynamically based on real-time lift force feedback[cite: 2].
+*   **Simulink Approximation:** MATLAB/Simulink was used in parallel to model system dynamics, simulate noise, and approximate optimal PID gains prior to full CFD integration[cite: 2].
+
+The standard PID control law applied to calculate the AoA correction is defined as[cite: 2]:
+
+$$
+u(t) = K_p e(t) + K_i \int_0^t e(\tau)d\tau + K_d \frac{de(t)}{dt}
+$$
+
+## Results & Analysis
+
+The integrated CFD-PID control framework effectively mitigated lift fluctuations and improved overall vessel stability, though several dynamic challenges were identified[cite: 2].
+
+*   **Signal Filtering & Noise Reduction:** Wave-induced disturbances introduced severe high-frequency noise into the lift signal, causing abrupt and destabilizing AoA adjustments[cite: 2]. An Exponential Moving Average (EMA) filter was implemented and optimized at a smoothing factor of $\alpha=0.5$ to balance system responsiveness with noise suppression[cite: 2].
+*   **Discrete Control Updates:** A discrete PID controller (updating at fixed 0.1-second intervals) was utilized instead of a continuous one[cite: 2]. This prevented rapid, instantaneous AoA changes that caused massive "lift spikes" and numerical instability in the coupled simulation[cite: 2].
+*   **Submergence Depth Impacts:** At shallow depths (e.g., 0.1 m), wave-induced disturbances were highly pronounced, requiring aggressive AoA limits but resulting in oscillatory behavior[cite: 2]. At deeper submergences (e.g., 0.6 m), free-surface interference was minimized, leading to smoother lift generation, though hydrodynamic drag increased[cite: 2].
+*   **Ride Height Regulation:** The controller successfully maintained target ride heights and trim angles, though aggressive adjustments often drove the front hydrofoil to its maximum mechanical limits ($10^\circ$ and $-8^\circ$)[cite: 2]. 
+
+Ultimately, while the PID framework proved capable in steady environments, the non-linearities of multiphase wave interactions suggest that future iterations could benefit from advanced strategies like Model Predictive Control (MPC)[cite: 2].
+
+<a 
+  href="https://drive.google.com/file/d/YOUR_FILE_ID/view" 
+  target="_blank" 
+  className="inline-block px-6 py-3 mt-8 text-cyan-400 border border-cyan-400 rounded hover:bg-cyan-400 hover:text-gray-900 transition-colors"
+>
+  🔒 Request Access to Full Master's Thesis (PDF)
+</a>
+
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-8">
+  <figure>
+    <video autoPlay loop muted playsInline className="w-full rounded-lg border border-gray-700 shadow-lg">
+      <source src="/videos/hydrofoil-pid-control/steady-flow.mp4" type="video/mp4" />
+    </video>
+    <figcaption className="text-center mt-3 text-sm text-gray-400">
+      PID adjustments in steady-flow conditions.
+    </figcaption>
+  </figure>
+
+  <figure>
+    <video autoPlay loop muted playsInline className="w-full rounded-lg border border-gray-700 shadow-lg">
+      <source src="/videos/hydrofoil-pid-control/unsteady-waves.mp4" type="video/mp4" />
+    </video>
+    <figcaption className="text-center mt-3 text-sm text-gray-400">
+      Wave-induced disturbances and AoA compensation.
+    </figcaption>
+  </figure>
+</div>
