@@ -134,6 +134,59 @@
   .tech-pill {
     @apply font-mono text-xs tracking-tight text-ink-muted border border-hairline rounded px-2 py-1;
   }
+
+  .story-filter {
+    box-shadow: inset 0 2px 0 theme("colors.vortex.DEFAULT");
+  }
+  .story-filter__button {
+    @apply inline-flex items-center gap-2 px-3 py-2 font-mono text-xs text-ink-muted transition-colors duration-200;
+  }
+  .story-filter__button:hover,
+  .story-filter__button.is-active {
+    @apply bg-void-raised text-ink;
+  }
+  .story-filter__button span {
+    @apply text-ink-faint;
+  }
+  .story-filter__button.is-active span {
+    @apply text-vortex;
+  }
+
+  .story-grid {
+    @apply grid gap-5 md:grid-cols-2;
+  }
+  .story-card {
+    @apply relative overflow-hidden border border-hairline bg-glass transition-colors duration-300;
+    box-shadow: inset 3px 0 0 theme("colors.flow.DEFAULT");
+  }
+  .story-card:hover {
+    @apply border-ink-faint bg-void-raised;
+  }
+  .story-card--lead {
+    @apply md:col-span-2;
+    box-shadow: inset 3px 0 0 theme("colors.vortex.DEFAULT");
+  }
+  .story-card__topline {
+    @apply flex items-center justify-between gap-4 px-5 pt-5 font-mono text-xs uppercase tracking-wider text-ink-faint;
+  }
+  .story-card__topline span:last-child {
+    @apply border border-hairline px-2 py-1;
+  }
+  .story-card__image {
+    @apply mt-5 h-48 w-full object-cover grayscale transition duration-500;
+  }
+  .story-card:hover .story-card__image {
+    @apply grayscale-0;
+  }
+  .story-card__body {
+    @apply p-5 sm:p-6;
+  }
+  .story-card--lead .story-card__body {
+    @apply md:max-w-3xl md:p-8;
+  }
+  .story-card[hidden] {
+    display: none;
+  }
 }
 
 /* KaTeX rendering tweaks so equations sit naturally in the dark theme */

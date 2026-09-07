@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { Image } from "astro:assets";
 import YouTubeEmbed from "../../components/YouTubeEmbed.astro";
 import Gallery from "../../components/Gallery.astro";
 import { getCollection } from "astro:content";
@@ -7,50 +8,74 @@ import { getCollection } from "astro:content";
 const stories = (await getCollection("stories")).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
+const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))];
 ---
 
 <BaseLayout
   title="Stories"
   description="Trainspotting, humour, photography, and narrative alongside the technical work."
 >
-  <section class="max-w-4xl mx-auto px-6 py-20">
-    <header class="mb-12 border-b border-hairline pb-8">
-      <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
-        Stories
-      </h1>
-      <p class="mt-4 text-ink-muted max-w-xl leading-relaxed">
-        Trains, humour, photography, and the narrative side of things.
-        New entries: drop an .mdx file into
-        <code class="font-mono text-vortex">src/content/stories/</code> —
-        video, photo, or writing.
-      </p>
+  <section class="max-w-6xl mx-auto px-6 py-20">
+    <header class="mb-10 grid gap-8 border-b border-hairline pb-10 lg:grid-cols-[1fr_auto] lg:items-end">
+      <div>
+        <p class="font-mono text-xs uppercase tracking-[0.24em] text-vortex">Field notes / {stories.length} entries</p>
+        <h1 class="mt-3 font-display text-5xl text-ink tracking-tight sm:text-6xl">
+          Stories
+        </h1>
+        <p class="mt-5 max-w-xl text-ink-muted leading-relaxed">
+          Trains, humour, photography, and the narrative side of things. Follow a thread through the years, or open the whole journal at once.
+        </p>
+      </div>
+
+      <nav aria-label="Filter stories by year" class="story-filter glass-panel p-2">
+        <div class="flex flex-wrap gap-1" role="tablist">
+          <button class="story-filter__button is-active" type="button" data-story-filter="all" role="tab" aria-selected="true">
+            All <span>{stories.length}</span>
+          </button>
+          {years.map((year) => (
+            <button class="story-filter__button" type="button" data-story-filter={year} role="tab" aria-selected="false">
+              {year} <span>{stories.filter((story) => story.data.date.getFullYear() === year).length}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
     </header>
 
-    <div class="space-y-20">
-      {stories.map(async (s) => {
-        const { Content } = await s.render();
-        return (
-          <article id={s.slug} class="scroll-mt-24">
-            <div class="flex items-center gap-3 font-mono text-xs text-ink-faint mb-3">
-              <span>{s.data.date.toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" })}</span>
-              <span>·</span>
-              <span class={s.data.kind === "video" ? "text-vortex" : "text-flow"}>
-                {s.data.kind}
-              </span>
-            </div>
-            <h2 class="font-display text-2xl text-ink">{s.data.title}</h2>
-            <p class="mt-2 text-ink-muted">{s.data.summary}</p>
+    <div class="mb-8 flex items-center justify-between gap-4 font-mono text-xs text-ink-faint">
+      <p id="story-filter-status" aria-live="polite">Showing all stories</p>
+      <p>{years.length > 1 ? "Newest first" : "A beginning"}</p>
+    </div>
 
-            {s.data.kind === "video" && s.data.youtubeId && (
-              <div class="mt-6">
-                <YouTubeEmbed youtubeId={s.data.youtubeId} title={s.data.title} />
-              </div>
+    <div class="story-grid">
+      {stories.map(async (s, index) => {
+        const { Content } = await s.render();
+        const year = s.data.date.getFullYear();
+        return (
+          <article id={s.slug} class:list={["story-card", index === 0 && "story-card--lead", "scroll-mt-24"]} data-story-year={year}>
+            <div class="story-card__topline">
+              <span>{s.data.date.toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" })}</span>
+              <span class={s.data.kind === "video" ? "text-vortex" : "text-flow"}>{s.data.kind}</span>
+            </div>
+
+            {s.data.coverImage && (
+              <Image src={s.data.coverImage} alt="" class="story-card__image" widths={[500, 900]} sizes="(min-width: 1024px) 50vw, 100vw" />
             )}
 
-            {s.data.kind === "photo" && <Gallery images={s.data.gallery} alt={s.data.title} />}
+            <div class="story-card__body">
+              <h2 class="font-display text-2xl leading-tight text-ink">{s.data.title}</h2>
+              <p class="mt-3 text-ink-muted leading-relaxed">{s.data.summary}</p>
 
-            <div class="prose prose-invert prose-a:text-flow max-w-none mt-6">
-              <Content />
+              {s.data.kind === "video" && s.data.youtubeId && (
+                <div class="mt-6">
+                  <YouTubeEmbed youtubeId={s.data.youtubeId} title={s.data.title} />
+                </div>
+              )}
+
+              {s.data.kind === "photo" && <Gallery images={s.data.gallery} alt={s.data.title} />}
+
+              <div class="prose prose-invert prose-a:text-flow max-w-none mt-6">
+                <Content />
+              </div>
             </div>
           </article>
         );
@@ -58,3 +83,27 @@ const stories = (await getCollection("stories")).sort(
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-story-filter]");
+  const cards = document.querySelectorAll<HTMLElement>("[data-story-year]");
+  const status = document.querySelector<HTMLElement>("#story-filter-status");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const filter = button.dataset.storyFilter ?? "all";
+      const visibleCount = [...cards].filter((card) => filter === "all" || card.dataset.storyYear === filter).length;
+
+      buttons.forEach((item) => {
+        const active = item === button;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-selected", String(active));
+      });
+      cards.forEach((card) => {
+        const visible = filter === "all" || card.dataset.storyYear === filter;
+        card.hidden = !visible;
+      });
+      if (status) status.textContent = filter === "all" ? "Showing all stories" : `Showing ${visibleCount} ${filter} ${visibleCount === 1 ? "story" : "stories"}`;
+    });
+  });
+</script>
