@@ -5,7 +5,7 @@ import Gallery from "../../components/Gallery.astro";
 import { getCollection } from "astro:content";
 
 const stories = (await getCollection("stories")).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf() || a.slug.localeCompare(b.slug)
 );
 const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))];
 ---
@@ -42,7 +42,7 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
 
     <div class="mb-8 flex items-center justify-between gap-4 font-mono text-xs text-ink-faint">
       <p id="story-filter-status" aria-live="polite">Showing all stories</p>
-      <p>{years.length > 1 ? "Newest first" : "A beginning"}</p>
+      <p>{years.length > 1 ? "Date order / newest first" : "A beginning"}</p>
     </div>
 
     <div class="story-grid" aria-label="Story index">

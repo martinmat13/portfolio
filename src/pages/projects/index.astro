@@ -4,9 +4,12 @@ import ProjectRow from "../../components/ProjectRow.astro";
 import { getCollection } from "astro:content";
 
 const projects = (await getCollection("projects")).sort(
-  (a, b) => a.data.order - b.data.order || b.data.date.valueOf() - a.data.date.valueOf()
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf() || a.data.order - b.data.order
 );
-const featuredProject = projects.find((project) => project.data.featured) ?? projects[0];
+const years = [...new Set(projects.map((project) => project.data.date.getFullYear()))];
+const featuredProject = projects
+  .filter((project) => project.data.featured)
+  .sort((a, b) => a.data.order - b.data.order || b.data.date.valueOf() - a.data.date.valueOf())[0] ?? projects[0];
 const supportingProjects = projects.filter((project) => project !== featuredProject);
 ---
 
@@ -24,11 +27,32 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
           reproducible methods, operating conditions, and observed results.
         </p>
       </div>
-      <p class="font-mono text-xs text-ink-faint lg:text-right">CFD / DEM / MULTIPHASE</p>
+      <nav aria-label="Filter projects by year" class="story-filter glass-panel p-2">
+        <div class="flex flex-wrap gap-1" role="tablist">
+          <button class="story-filter__button is-active" type="button" data-project-filter="all" role="tab" aria-selected="true">
+            All <span>{projects.length}</span>
+          </button>
+          {years.map((year) => (
+            <button class="story-filter__button" type="button" data-project-filter={year} role="tab" aria-selected="false">
+              {year} <span>{projects.filter((project) => project.data.date.getFullYear() === year).length}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
     </header>
 
+    <div class="mb-8 flex items-center justify-between gap-4 font-mono text-xs text-ink-faint">
+      <p id="project-filter-status" aria-live="polite">Showing all projects</p>
+      <p>{years.length > 1 ? "Newest first" : "A beginning"}</p>
+    </div>
+
     {featuredProject && (
-      <div class="project-feature fluid-reveal mt-10" style="--fluid-delay: 100ms" data-fluid-reveal>
+      <div
+        class="project-feature fluid-reveal mt-10"
+        style="--fluid-delay: 100ms"
+        data-fluid-reveal
+        data-project-year={featuredProject.data.date.getFullYear()}
+      >
         <div class="project-feature__signal" aria-hidden="true">
           <span class="project-feature__line"></span>
           <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-vortex">Featured study</span>
@@ -58,22 +82,51 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
         </div>
         <div>
           {supportingProjects.map((p, i) => (
-            <ProjectRow
-              index={i + 2}
-              href={`/projects/${p.slug}`}
-              title={p.data.title}
-              summary={p.data.summary}
-              stack={p.data.stack}
-              tags={p.data.tags}
-              solver={p.data.solver}
-              metrics={p.data.metrics}
-              status={p.data.status}
-              date={p.data.date}
-              coverImage={p.data.coverImage}
-            />
+            <div data-project-year={p.data.date.getFullYear()}>
+              <ProjectRow
+                index={i + 2}
+                href={`/projects/${p.slug}`}
+                title={p.data.title}
+                summary={p.data.summary}
+                stack={p.data.stack}
+                tags={p.data.tags}
+                solver={p.data.solver}
+                metrics={p.data.metrics}
+                status={p.data.status}
+                date={p.data.date}
+                coverImage={p.data.coverImage}
+              />
+            </div>
           ))}
         </div>
       </div>
     )}
   </section>
 </BaseLayout>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-project-filter]");
+  const entries = document.querySelectorAll<HTMLElement>("[data-project-year]");
+  const status = document.querySelector<HTMLElement>("#project-filter-status");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const filter = button.dataset.projectFilter ?? "all";
+      const visibleCount = [...entries].filter((entry) => filter === "all" || entry.dataset.projectYear === filter).length;
+
+      buttons.forEach((item) => {
+        const active = item === button;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-selected", String(active));
+      });
+      entries.forEach((entry) => {
+        entry.hidden = filter !== "all" && entry.dataset.projectYear !== filter;
+      });
+      if (status) {
+        status.textContent = filter === "all"
+          ? "Showing all projects"
+          : `Showing ${visibleCount} ${filter} ${visibleCount === 1 ? "project" : "projects"}`;
+      }
+    });
+  });
+</script>
