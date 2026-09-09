@@ -62,7 +62,18 @@ const stories = defineCollection({
   schema: ({ image }) =>
     z.object({
       title: z.string(),
-      kind: z.enum(["video", "photo", "writing"]),
+      kind: z.enum([
+                    "writing", 
+                    "video", 
+                    "photo", 
+                    "gallery", 
+                    "tutorial", 
+                    "guide", 
+                    "presentation", 
+                    "travelogue", 
+                    "journal", 
+                    "reflection"
+                  ]),
       summary: z.string().max(220),
       date: z.coerce.date(),
       youtubeId: z.string().optional(), // required when kind === "video"
