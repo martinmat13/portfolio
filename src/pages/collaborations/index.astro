@@ -1,10 +1,12 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
 
 const collabs = (await getCollection("collaborations")).sort(
-  (a, b) => a.data.order - b.data.order
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf() || a.data.order - b.data.order
 );
+const years = [...new Set(collabs.map((collab) => collab.data.date.getFullYear()))];
 const renderedCollabs = await Promise.all(
   collabs.map(async (entry) => ({
     entry,
@@ -18,29 +20,62 @@ const renderedCollabs = await Promise.all(
   description="Academic and professional collaborations outside my core CFD focus."
 >
   <section class="max-w-6xl mx-auto px-6 py-20">
-    <header class="fluid-reveal mb-10 border-b border-hairline pb-8" data-fluid-reveal>
-      <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
-        Collaborations
-      </h1>
-      <p class="mt-4 text-ink-muted max-w-xl leading-relaxed">
-        Work done alongside other researchers, teams, and disciplines —
-        add a new one by dropping an .mdx file into
-        <code class="font-mono text-vortex">src/content/collaborations/</code>.
-      </p>
+    <header class="fluid-reveal mb-10 grid gap-8 border-b border-hairline pb-10 lg:grid-cols-[1fr_auto] lg:items-end" data-fluid-reveal>
+      <div>
+        <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
+          Collaborations
+        </h1>
+        <p class="mt-4 text-ink-muted max-w-xl leading-relaxed">
+          Work done alongside other researchers, teams, and disciplines —
+          add a new one by dropping an .mdx file into
+          <code class="font-mono text-vortex">src/content/collaborations/</code>.
+        </p>
+      </div>
+      <nav aria-label="Filter collaborations by year" class="story-filter glass-panel p-2">
+        <div class="flex flex-wrap gap-1" role="tablist">
+          <button class="story-filter__button is-active" type="button" data-collaboration-filter="all" role="tab" aria-selected="true">
+            All <span>{collabs.length}</span>
+          </button>
+          {years.map((year) => (
+            <button class="story-filter__button" type="button" data-collaboration-filter={year} role="tab" aria-selected="false">
+              {year} <span>{collabs.filter((collab) => collab.data.date.getFullYear() === year).length}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
     </header>
 
-    <div class="grid sm:grid-cols-2 gap-6">
+    <div class="mb-8 flex items-center justify-between gap-4 font-mono text-xs text-ink-faint">
+      <p id="collaboration-filter-status" aria-live="polite">Showing all collaborations</p>
+      <p>{years.length > 1 ? "Newest first" : "A beginning"}</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-6" aria-label="Collaboration index">
       {renderedCollabs.map(({ entry, Content }, index) => (
         <a
           href={`/collaborations/${entry.slug}`}
           class="fluid-reveal group block border border-hairline rounded-lg p-6 hover:border-flow/40 hover:bg-void-raised transition-colors"
           style={`--fluid-delay: ${index * 100}ms`}
           data-fluid-reveal
+          data-collaboration-year={entry.data.date.getFullYear()}
         >
-          <p class="font-mono text-xs text-ink-faint">{entry.data.period}</p>
-          <h2 class="font-display text-xl text-ink mt-2 group-hover:text-flow transition-colors">
-            {entry.data.title}
-          </h2>
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="font-mono text-xs text-ink-faint">{entry.data.period}</p>
+              <h2 class="font-display text-xl text-ink mt-2 group-hover:text-flow transition-colors">
+                {entry.data.title}
+              </h2>
+            </div>
+            {entry.data.logo && (
+              <Image
+                src={entry.data.logo}
+                alt={`${entry.data.partner} logo`}
+                width={64}
+                height={64}
+                class="h-12 w-12 shrink-0 object-contain"
+              />
+            )}
+          </div>
           <p class="font-mono text-xs text-flow mt-1">
             {entry.data.partner} — {entry.data.role}
           </p>
@@ -61,3 +96,30 @@ const renderedCollabs = await Promise.all(
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-collaboration-filter]");
+  const cards = document.querySelectorAll<HTMLElement>("[data-collaboration-year]");
+  const status = document.querySelector<HTMLElement>("#collaboration-filter-status");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const filter = button.dataset.collaborationFilter ?? "all";
+      const visibleCount = [...cards].filter((card) => filter === "all" || card.dataset.collaborationYear === filter).length;
+
+      buttons.forEach((item) => {
+        const active = item === button;
+        item.classList.toggle("is-active", active);
+        item.setAttribute("aria-selected", String(active));
+      });
+      cards.forEach((card) => {
+        card.hidden = filter !== "all" && card.dataset.collaborationYear !== filter;
+      });
+      if (status) {
+        status.textContent = filter === "all"
+          ? "Showing all collaborations"
+          : `Showing ${visibleCount} ${filter} ${visibleCount === 1 ? "collaboration" : "collaborations"}`;
+      }
+    });
+  });
+</script>

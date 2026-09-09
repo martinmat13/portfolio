@@ -45,7 +45,9 @@ const collaborations = defineCollection({
       role: z.string(), // your role in the collaboration
       summary: z.string().max(240),
       period: z.string(), // e.g. "2024 – present"
+      date: z.coerce.date(),
       tags: z.array(z.string()).default([]),
+      logo: image().optional(),
       coverImage: image().optional(),
       link: z.string().url().optional(),
       order: z.number().default(99),
