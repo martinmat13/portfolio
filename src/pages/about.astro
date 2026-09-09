@@ -13,13 +13,13 @@ const links = [
 <BaseLayout title="About" description="Bio, contact links, and CV.">
   <!-- Interactive Convergence Canvas Header -->
   <section class="relative overflow-hidden border-b border-hairline bg-void pt-20 pb-16 sm:pt-28 sm:pb-20" data-fluid-reveal>
-    <canvas id="convergence-canvas" class="absolute inset-0 w-full h-full opacity-70"></canvas>
+    <canvas id="convergence-canvas" class="absolute inset-0 w-full h-full opacity-80"></canvas>
     <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-void pointer-events-none"></div>
 
     <div class="relative z-10 max-w-3xl mx-auto px-6 pointer-events-none">
       <p class="font-mono text-xs uppercase tracking-[0.24em] text-flow pointer-events-auto">End of the line / Thank you for visiting</p>
       <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight mt-4 pointer-events-auto">
-        About & <span class="text-flow">Convergence</span>
+        About 
       </h1>
       <p class="text-ink-muted mt-4 text-lg leading-relaxed pointer-events-auto">
         Thanks for taking the time to explore my corner of the web. Whether you're here to inspect my numerical solvers or browsing my travel field notes, I hope you found your visit worthwhile. The door's always open for a return trip.
@@ -76,8 +76,7 @@ const links = [
 
 <script>
   // --------------------------------------------------------
-  // CONVERGENCE CANVAS ANIMATION (Safe, crash-proof, bright)
-  // Particles flow inward, symbolizing a completed journey/convergence
+  // CONVERGENCE CANVAS ANIMATION (Full Rainbow Spectrum)
   // --------------------------------------------------------
   const canvas = document.getElementById("convergence-canvas") as HTMLCanvasElement | null;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -110,26 +109,39 @@ const links = [
       mx = -1000; my = -1000; 
     });
 
-    const COUNT = 120;
+    const COUNT = 160;
     type Particle = { x: number; y: number; vx: number; vy: number; size: number; color: string };
     const particles: Particle[] = [];
 
+    // Full rainbow spectrum + bright vibrant accents
+    const spectrumColors = [
+      "0, 229, 255",   // Cyan (Flow)
+      "255, 122, 26",  // Orange (Vortex)
+      "255, 0, 128",   // Magenta / Hot Pink
+      "147, 51, 234",  // Electric Purple
+      "34, 197, 94",   // Lime Green
+      "234, 179, 8",   // Bright Yellow
+      "59, 130, 246",  // Royal Blue
+      "236, 72, 153",  // Pink
+      "16, 185, 129",  // Emerald
+      "244, 63, 94",   // Rose Red
+      "168, 85, 247"   // Violet
+    ];
+
     function spawn(): Particle {
-      // Spawn particles randomly around the edges, heading toward the center
       const angle = Math.random() * Math.PI * 2;
       const dist = Math.max(width, height) * 0.5 + Math.random() * 100;
       const centerX = width / 2;
       const centerY = height / 2;
       
-      const isVortex = Math.random() > 0.8;
-      const color = isVortex ? "255, 122, 26" : "0, 229, 255";
+      const color = spectrumColors[Math.floor(Math.random() * spectrumColors.length)];
 
       return {
         x: centerX + Math.cos(angle) * dist,
         y: centerY + Math.sin(angle) * dist,
         vx: (centerX - (centerX + Math.cos(angle) * dist)) * 0.005,
         vy: (centerY - (centerY + Math.sin(angle) * dist)) * 0.005,
-        size: 1 + Math.random() * 2,
+        size: 1.2 + Math.random() * 2.2,
         color: color
       };
     }
@@ -139,7 +151,7 @@ const links = [
     function step() {
       if (!isRunning) return;
 
-      // Soft fading background trail
+      // Soft trailing fade
       ctx.fillStyle = "rgba(5, 8, 13, 0.12)";
       ctx.fillRect(0, 0, width, height);
 
@@ -149,7 +161,6 @@ const links = [
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
 
-        // Gentle pull towards center (convergence)
         const dx = centerX - p.x;
         const dy = centerY - p.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -157,11 +168,9 @@ const links = [
         p.vx += (dx / dist) * 0.02;
         p.vy += (dy / dist) * 0.02;
 
-        // Dampen velocity so they orbit gently near the center
         p.vx *= 0.98;
         p.vy *= 0.98;
 
-        // Mouse interaction (repel slightly if cursor is near)
         const mdx = p.x - mx;
         const mdy = p.y - my;
         const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
@@ -173,13 +182,11 @@ const links = [
         p.x += p.vx;
         p.y += p.vy;
 
-        // Draw particle
-        ctx.fillStyle = `rgba(${p.color}, 0.85)`;
+        ctx.fillStyle = `rgba(${p.color}, 0.9)`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
 
-        // Respawn if they get too close to center or drift away
         if (dist < 20 || p.x < 0 || p.x > width || p.y < 0 || p.y > height) {
           particles[i] = spawn();
         }
