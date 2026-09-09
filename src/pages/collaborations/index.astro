@@ -7,12 +7,6 @@ const collabs = (await getCollection("collaborations")).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf() || a.data.order - b.data.order
 );
 const years = [...new Set(collabs.map((collab) => collab.data.date.getFullYear()))];
-const renderedCollabs = await Promise.all(
-  collabs.map(async (entry) => ({
-    entry,
-    Content: (await entry.render()).Content,
-  }))
-);
 ---
 
 <BaseLayout
@@ -53,7 +47,7 @@ const renderedCollabs = await Promise.all(
     </div>
 
     <div class="grid sm:grid-cols-2 gap-6" aria-label="Collaboration index">
-      {renderedCollabs.map(({ entry, Content }, index) => (
+      {collabs.map((entry, index) => (
         <a
           href={`/collaborations/${entry.slug}`}
           class="fluid-reveal group block border border-hairline rounded-lg p-6 hover:border-flow/40 hover:bg-void-raised transition-colors"
@@ -82,9 +76,6 @@ const renderedCollabs = await Promise.all(
             {entry.data.partner} — {entry.data.role}
           </p>
           <p class="mt-3 text-ink-muted leading-relaxed">{entry.data.summary}</p>
-          <div class="prose prose-invert prose-sm prose-p:text-ink-muted prose-p:leading-relaxed max-w-none mt-4 border-t border-hairline pt-4">
-            <Content />
-          </div>
           <div class="mt-4 flex flex-wrap gap-2">
             {entry.data.tags.map((t) => (
               <span class="font-mono text-xs text-ink-faint">#{t}</span>
