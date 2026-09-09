@@ -195,6 +195,9 @@
   .story-entry {
     @apply border-t border-hairline pt-8;
   }
+  [hidden] {
+    display: none !important;
+  }
   .story-card[hidden] {
     display: none;
   }
