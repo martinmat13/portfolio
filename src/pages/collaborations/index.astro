@@ -13,21 +13,27 @@ const years = [...new Set(collabs.map((collab) => collab.data.date.getFullYear()
   title="Collaborations"
   description="Academic and professional collaborations outside my core CFD focus."
 >
-  <section class="max-w-6xl mx-auto px-6 py-20">
-    <header class="fluid-reveal mb-10 grid gap-8 border-b border-hairline pb-10 lg:grid-cols-[1fr_auto] lg:items-end" data-fluid-reveal>
+  <!-- 1. INTERACTIVE MESH / JOINT NETWORK CANVAS HERO -->
+  <section class="relative overflow-hidden border-b border-hairline bg-void pt-20 pb-12 sm:pt-28 sm:pb-16" data-fluid-reveal>
+    <!-- Dual-Tone Network / Node Mesh Canvas -->
+    <canvas id="network-canvas" class="absolute inset-0 w-full h-full opacity-75"></canvas>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-void pointer-events-none"></div>
+
+    <!-- Header Content & Filter (Placed over canvas) -->
+    <div class="relative z-10 max-w-6xl mx-auto px-6 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end pointer-events-none">
       <div>
-        <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
-          Collaborations
+        <p class="font-mono text-xs uppercase tracking-[0.24em] text-flow pointer-events-auto">Network index / {collabs.length} nodes</p>
+        <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight mt-4 pointer-events-auto">
+          Academic & Team <span class="text-flow">Collaborations</span>
         </h1>
-        <p class="mt-4 text-ink-muted max-w-xl leading-relaxed">
+        <p class="mt-4 text-ink-muted max-w-xl leading-relaxed pointer-events-auto">
           Growth and innovation are rarely achieved in isolation. 
           This section is dedicated to collaborative work, ranging from joint research ventures and 
-          technical training to volunteering and community projects. Whether tackling complex problems 
-          with a team or giving back through service, these experiences reflect the power of shared effort and 
-          cross-disciplinary connection.
+          technical training to community initiatives—reflecting the power of shared effort and cross-disciplinary connection.
         </p>
       </div>
-      <nav aria-label="Filter collaborations by year" class="story-filter glass-panel p-2">
+
+      <nav aria-label="Filter collaborations by year" class="story-filter glass-panel p-2 pointer-events-auto">
         <label class="story-filter__label" for="collaboration-year-filter">View</label>
         <select id="collaboration-year-filter" class="story-filter__select" aria-label="Filter collaborations by year">
           <option value="all">All years ({collabs.length})</option>
@@ -36,8 +42,11 @@ const years = [...new Set(collabs.map((collab) => collab.data.date.getFullYear()
           ))}
         </select>
       </nav>
-    </header>
+    </div>
+  </section>
 
+  <!-- 2. COLLABORATIONS GRID SECTION -->
+  <section class="max-w-6xl mx-auto px-6 py-12">
     <div class="mb-8 flex items-center justify-between gap-4 font-mono text-xs text-ink-faint">
       <p id="collaboration-filter-status" aria-live="polite">Showing all collaborations</p>
       <p>{years.length > 1 ? "Date order / newest first" : "A beginning"}</p>
@@ -88,6 +97,7 @@ const years = [...new Set(collabs.map((collab) => collab.data.date.getFullYear()
 </BaseLayout>
 
 <script>
+  // 1. COLLABORATION FILTER LOGIC
   const cards = document.querySelectorAll<HTMLElement>("[data-collaboration-year]");
   const filter = document.querySelector<HTMLSelectElement>("#collaboration-year-filter");
   const status = document.querySelector<HTMLElement>("#collaboration-filter-status");
@@ -100,4 +110,124 @@ const years = [...new Set(collabs.map((collab) => collab.data.date.getFullYear()
     });
     if (status) status.textContent = year === "all" ? "Showing all collaborations" : `Showing ${visibleCount} ${year} ${visibleCount === 1 ? "collaboration" : "collaborations"}`;
   });
+
+  // 2. DUAL-TONE INTERACTIVE NETWORK MESH ANIMATION
+  // Features connected dual nodes (Cyan Flow + Vortex Orange) reacting to mouse position
+  const canvas = document.getElementById("network-canvas") as HTMLCanvasElement | null;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (canvas && !prefersReducedMotion) {
+    const ctx = canvas.getContext("2d")!;
+    let width = 0, height = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let mx = -1000, my = -1000;
+    let isRunning = false;
+
+    const resize = () => {
+      width = canvas.clientWidth; height = canvas.clientHeight;
+      canvas.width = width * dpr; canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+    };
+    resize();
+
+    window.addEventListener("resize", () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      resize();
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mx = e.clientX - rect.left;
+      my = e.clientY - rect.top;
+    });
+
+    window.addEventListener("mouseleave", () => {
+      mx = -1000; my = -1000;
+    });
+
+    type Node = { x: number; y: number; vx: number; vy: number; type: "flow" | "vortex"; radius: number };
+    const NODE_COUNT = 45;
+    const nodes: Node[] = [];
+
+    for (let i = 0; i < NODE_COUNT; i++) {
+      nodes.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 1.2,
+        vy: (Math.random() - 0.5) * 1.2,
+        type: Math.random() > 0.75 ? "vortex" : "flow", // 25% orange vortex nodes, 75% cyan flow nodes
+        radius: 2 + Math.random() * 2
+      });
+    }
+
+    function step() {
+      if (!isRunning) return;
+
+      ctx.fillStyle = "rgba(5, 8, 13, 0.2)";
+      ctx.fillRect(0, 0, width, height);
+
+      // Update & draw nodes
+      for (let i = 0; i < nodes.length; i++) {
+        const n = nodes[i];
+        n.x += n.vx;
+        n.y += n.vy;
+
+        if (n.x < 0 || n.x > width) n.vx *= -1;
+        if (n.y < 0 || n.y > height) n.vy *= -1;
+
+        // Mouse attraction/repulsion
+        const dx = mx - n.x;
+        const dy = my - n.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150 && dist > 0) {
+          n.x += (dx / dist) * 0.8;
+          n.y += (dy / dist) * 0.8;
+        }
+
+        // Connect nearby nodes to form a collaborative mesh network
+        for (let j = i + 1; j < nodes.length; j++) {
+          const n2 = nodes[j];
+          const ndx = n.x - n2.x;
+          const ndy = n.y - n2.y;
+          const ndist = Math.sqrt(ndx * ndx + ndy * ndy);
+
+          if (ndist < 120) {
+            const alpha = (1 - ndist / 120) * 0.4;
+            // Dual-tone line color depending on node types
+            const lineColor = (n.type === "vortex" || n2.type === "vortex") ? "255, 122, 26" : "0, 229, 255";
+            ctx.strokeStyle = `rgba(${lineColor}, ${alpha})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(n.x, n.y);
+            ctx.lineTo(n2.x, n2.y);
+            ctx.stroke();
+          }
+        }
+
+        // Draw node dot
+        const color = n.type === "vortex" ? "255, 122, 26" : "0, 229, 255";
+        ctx.fillStyle = `rgba(${color}, 0.9)`;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!isRunning) {
+            isRunning = true;
+            requestAnimationFrame(step);
+          }
+        } else {
+          isRunning = false;
+        }
+      },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
+  }
 </script>
