@@ -17,17 +17,25 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
   title="Projects"
   description="CFD, numerical simulation, and engineering research projects — OpenFOAM, ANSYS Fluent, LIGGGHTS."
 >
-  <section class="max-w-6xl mx-auto px-6 py-16 sm:py-20">
-    <header class="fluid-reveal grid lg:grid-cols-[1fr_auto] gap-8 items-end border-b border-hairline pb-10" data-fluid-reveal>
+  <!-- 1. NEW INTERACTIVE CANVAS HERO -->
+  <section class="relative overflow-hidden border-b border-hairline bg-void pt-20 pb-12 sm:pt-28 sm:pb-16" data-fluid-reveal>
+    <!-- Wind Tunnel Canvas -->
+    <canvas id="wind-tunnel-canvas" class="absolute inset-0 w-full h-full opacity-60"></canvas>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-void pointer-events-none"></div>
+
+    <!-- Header Content & Filter (Placed over the canvas) -->
+    <div class="relative z-10 max-w-6xl mx-auto px-6 grid lg:grid-cols-[1fr_auto] gap-8 items-end pointer-events-none">
       <div>
-        <p class="font-mono text-xs uppercase tracking-[0.18em] text-flow">Research index / 0{projects.length}</p>
-        <h1 class="mt-4 font-display text-4xl sm:text-5xl text-ink tracking-tight">Projects</h1>
-        <p class="mt-4 text-ink-muted max-w-xl leading-relaxed">
+        <p class="font-mono text-xs uppercase tracking-[0.18em] text-flow pointer-events-auto">Research index / 0{projects.length}</p>
+        <h1 class="mt-4 font-display text-4xl sm:text-5xl text-ink tracking-tight pointer-events-auto">Engineering <span class="text-flow">Projects</span></h1>
+        <p class="mt-4 text-ink-muted max-w-xl leading-relaxed pointer-events-auto">
           Numerical simulation and engineering research, recorded as studies with
           reproducible methods, operating conditions, and observed results.
         </p>
       </div>
-      <nav aria-label="Filter projects by year" class="story-filter glass-panel p-2">
+      
+      <!-- Year Filter Dropdown -->
+      <nav aria-label="Filter projects by year" class="story-filter glass-panel p-2 pointer-events-auto">
         <label class="story-filter__label" for="project-year-filter">View</label>
         <select id="project-year-filter" class="story-filter__select" aria-label="Filter projects by year">
           <option value="all">All years ({projects.length})</option>
@@ -36,8 +44,11 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
           ))}
         </select>
       </nav>
-    </header>
+    </div>
+  </section>
 
+  <!-- 2. PROJECT LIST SECTION -->
+  <section class="max-w-6xl mx-auto px-6 py-12">
     <div class="mb-8 flex items-center justify-between gap-4 font-mono text-xs text-ink-faint">
       <p id="project-filter-status" aria-live="polite">Showing all projects</p>
       <p>{years.length > 1 ? "Newest first" : "A beginning"}</p>
@@ -45,7 +56,7 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
 
     {featuredProject && (
       <div
-        class="project-feature fluid-reveal mt-10"
+        class="project-feature fluid-reveal mt-6"
         style="--fluid-delay: 100ms"
         data-fluid-reveal
         data-project-year={featuredProject.data.date.getFullYear()}
@@ -102,6 +113,9 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
 </BaseLayout>
 
 <script>
+  // --------------------------------------------------------
+  // 1. PROJECT FILTER LOGIC (Your existing code)
+  // --------------------------------------------------------
   const entries = document.querySelectorAll<HTMLElement>("[data-project-year]");
   const filter = document.querySelector<HTMLSelectElement>("#project-year-filter");
   const status = document.querySelector<HTMLElement>("#project-filter-status");
@@ -114,4 +128,101 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
     });
     if (status) status.textContent = year === "all" ? "Showing all projects" : `Showing ${visibleCount} ${year} ${visibleCount === 1 ? "project" : "projects"}`;
   });
+
+  // --------------------------------------------------------
+  // 2. WIND TUNNEL CANVAS LOGIC
+  // --------------------------------------------------------
+  const canvas = document.getElementById("wind-tunnel-canvas") as HTMLCanvasElement | null;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (canvas && !prefersReducedMotion) {
+    const ctx = canvas.getContext("2d")!;
+    let width = 0, height = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let mx = -1000, my = -1000, targetMx = -1000, targetMy = -1000;
+
+    const resize = () => {
+      width = canvas.clientWidth; height = canvas.clientHeight;
+      canvas.width = width * dpr; canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    // Track mouse coordinates relative to the canvas
+    window.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      targetMx = e.clientX - rect.left;
+      targetMy = e.clientY - rect.top;
+    });
+    window.addEventListener("mouseleave", () => { targetMx = -1000; targetMy = -1000; });
+
+    const COUNT = 300;
+    type P = { x: number; y: number; speed: number; length: number; hue: string };
+    const particles: P[] = Array.from({ length: COUNT }, () => spawn());
+
+    function spawn(p?: P): P {
+      const isVortex = Math.random() > 0.8;
+      const data = {
+        x: p ? -50 : Math.random() * width, 
+        y: Math.random() * height,
+        speed: 1.5 + Math.random() * 2,
+        length: 20 + Math.random() * 40,
+        hue: isVortex ? "255, 122, 26" : "0, 229, 255" // Combines your 'vortex' and 'flow' theme colors
+      };
+      if (p) Object.assign(p, data);
+      return p || data;
+    }
+
+    function step() {
+      ctx.fillStyle = "rgba(5, 8, 13, 0.2)"; // Trailing fade effect matching your bg-void
+      ctx.fillRect(0, 0, width, height);
+
+      // Smooth mouse interpolation
+      mx += (targetMx - mx) * 0.1;
+      my += (targetMy - my) * 0.1;
+
+      for (const p of particles) {
+        let vx = p.speed;
+        let vy = 0;
+
+        // Mouse Repulsion Effect (Simulating a bluff body in the flow)
+        const dx = p.x - mx;
+        const dy = p.y - my;
+        const distSq = dx * dx + dy * dy;
+        const radius = 120;
+
+        if (distSq < radius * radius && distSq > 0) {
+          const dist = Math.sqrt(distSq);
+          const force = (radius - dist) / radius;
+          vx += (dx / dist) * force * 4.5;
+          vy += (dy / dist) * force * 4.5;
+        }
+
+        const nx = p.x + vx;
+        const ny = p.y + vy;
+
+        ctx.strokeStyle = `rgba(${p.hue}, 0.7)`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(p.x - vx * 4, p.y - vy * 4); // Draw dynamic trail
+        ctx.lineTo(nx, ny);
+        ctx.stroke();
+
+        p.x = nx;
+        p.y = ny;
+
+        // Respawn particles when they exit the screen
+        if (p.x > width + 50 || p.y < -50 || p.y > height + 50) spawn(p);
+      }
+      requestAnimationFrame(step);
+    }
+    
+    // Only run animation when canvas is in view to save performance
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        requestAnimationFrame(step);
+      }
+    });
+    observer.observe(canvas);
+  }
 </script>
