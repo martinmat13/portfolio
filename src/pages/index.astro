@@ -12,6 +12,11 @@ const projects = (await getCollection("projects"))
 const latestStory = (await getCollection("stories")).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 )[0];
+
+// Fetch the most recent collaboration!
+const latestCollab = (await getCollection("collaborations")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+)[0];
 ---
 
 <BaseLayout title="Home">
@@ -40,21 +45,42 @@ const latestStory = (await getCollection("stories")).sort(
     </div>
   </section>
 
-  {latestStory && (
-    <section class="border-t border-hairline">
-      <div class="max-w-6xl mx-auto px-6 py-20 flex flex-col sm:flex-row sm:items-center gap-8 justify-between">
-        <div>
-          <p class="font-mono text-xs text-vortex mb-2">latest from stories</p>
-          <h2 class="font-display text-2xl text-ink">{latestStory.data.title}</h2>
-          <p class="mt-2 text-ink-muted max-w-lg">{latestStory.data.summary}</p>
+  <!-- Split section for Latest Story and Latest Collaboration -->
+  <section class="border-t border-hairline">
+    <div class="max-w-6xl mx-auto px-6 py-20 grid grid-cols-1 md:grid-cols-2 gap-12">
+      
+      {latestStory && (
+        <div class="flex flex-col h-full justify-between">
+          <div>
+            <p class="font-mono text-xs text-vortex mb-2">latest from stories</p>
+            <h2 class="font-display text-2xl text-ink">{latestStory.data.title}</h2>
+            <p class="mt-2 text-ink-muted">{latestStory.data.summary}</p>
+          </div>
+          <a
+            href={`/stories#${latestStory.slug}`}
+            class="font-mono text-sm border border-hairline px-5 py-3 rounded hover:border-vortex/50 hover:text-vortex transition-colors inline-block w-fit mt-6"
+          >
+            Watch / read →
+          </a>
         </div>
-        <a
-          href={`/stories#${latestStory.slug}`}
-          class="font-mono text-sm border border-hairline px-5 py-3 rounded hover:border-vortex/50 hover:text-vortex transition-colors shrink-0"
-        >
-          Watch / read →
-        </a>
-      </div>
-    </section>
-  )}
+      )}
+
+      {latestCollab && (
+        <div class="flex flex-col h-full justify-between">
+          <div>
+            <p class="font-mono text-xs text-cyan-500 mb-2">latest collaboration</p>
+            <h2 class="font-display text-2xl text-ink">{latestCollab.data.title}</h2>
+            <p class="mt-2 text-ink-muted">{latestCollab.data.summary}</p>
+          </div>
+          <a
+            href={`/collaborations#${latestCollab.slug}`}
+            class="font-mono text-sm border border-hairline px-5 py-3 rounded hover:border-flow/50 hover:text-flow transition-colors inline-block w-fit mt-6"
+          >
+            View detail →
+          </a>
+        </div>
+      )}
+
+    </div>
+  </section>
 </BaseLayout>

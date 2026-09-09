@@ -1,53 +1,170 @@
 ---
-// src/components/Hero.astro
+import HUDPanel from "./HUDPanel.astro";
 ---
 
-<section class="max-w-6xl mx-auto py-24 md:py-32">
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-    
-    <!-- Left Column: The Bio -->
-    <div class="flex flex-col space-y-6">
-      <div class="inline-block">
-        <span class="bg-flow/10 text-flow border border-flow/20 rounded-full px-3 py-1 text-sm font-mono uppercase tracking-wider">
-          Computational Engineer
-        </span>
-      </div>
-      
-      <h1 class="font-display text-5xl md:text-6xl text-ink tracking-tight leading-tight">
-        Modeling the physics of <br/> <span class="text-flow">fluid dynamics.</span>
-      </h1>
-      
-      <p class="text-ink-muted text-lg leading-relaxed max-w-md mt-4">
-        Hi, I'm Martin. I specialize in CFD, hydrodynamics, and numerical modelling. When I'm not chasing convergence in OpenFOAM, I'm exploring Europe's railways or collaborating on global engineering projects.
-      </p>
-      
-      <div class="flex flex-wrap gap-4 pt-6">
-        <a href="/projects" class="font-mono text-sm bg-flow text-void px-6 py-3 rounded shadow-glow-flow hover:brightness-110 transition text-center">
-          View Projects
-        </a>
-        <a href="/about" class="font-mono text-sm border border-hairline px-6 py-3 rounded text-ink-muted hover:text-flow hover:border-flow/40 transition-colors text-center">
-          More About Me
-        </a>
-      </div>
-    </div>
+<section class="fluid-reveal relative overflow-hidden border-b border-hairline" data-fluid-reveal>
+  <canvas id="flow-canvas" class="absolute inset-0 w-full h-full opacity-70"></canvas>
+  <div class="absolute inset-0 blueprint-grid opacity-[0.15] pointer-events-none"></div>
+  <div
+    class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-void pointer-events-none"
+  >
+  </div>
 
-    <!-- Right Column: The Photo -->
-    <div class="relative group mx-auto md:ml-auto md:mr-10 w-64 md:w-80 mt-10 md:mt-0">
-      <!-- Decorative background glow -->
-      <div class="absolute -inset-1 bg-gradient-to-r from-flow to-cyan-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-      
-      <!-- The Image -->
-      <img 
-        src="/images/martin-profile.jpg" 
-        alt="Martin Mathew" 
-        class="relative rounded-2xl border border-gray-800 shadow-2xl object-cover aspect-[4/5] grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out z-10"
-      />
-      
-      <!-- Decorative tech accents -->
-      <div class="absolute -bottom-4 -right-4 bg-void border border-hairline px-3 py-2 rounded font-mono text-xs text-flow shadow-lg hidden md:block z-20">
-        $ ./run_simulation.sh
+  <div class="relative max-w-6xl mx-auto px-6 pt-28 pb-24 sm:pt-36 sm:pb-32">
+    <div class="grid lg:grid-cols-[1fr_auto] gap-12 items-end">
+      <div>
+        <h1
+          class="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight text-ink"
+        >
+          I make turbulence
+          <br />
+          <span class="text-flow glow-text-flow">behave.</span>
+        </h1>
+        <p class="mt-6 max-w-xl text-ink-muted text-lg leading-relaxed">
+          Computational fluid dynamics, hydrodynamics, and numerical
+          modelling — OpenFOAM, ANSYS Fluent, and LIGGGHTS, applied to
+          problems that don't have closed-form answers. Occasionally I
+          also chase trains and tell stories.
+        </p>
+        <div class="mt-9 flex flex-wrap gap-4">
+          <a
+            href="/projects"
+            class="font-mono text-sm bg-flow text-void px-5 py-3 rounded shadow-glow-flow hover:brightness-110 transition"
+          >
+            View CFD work
+          </a>
+          <a
+            href="/stories"
+            class="font-mono text-sm border border-hairline text-ink px-5 py-3 rounded hover:border-vortex/50 hover:text-vortex transition"
+          >
+            Read the other stuff
+          </a>
+        </div>
       </div>
-    </div>
 
+      <HUDPanel />
+    </div>
   </div>
 </section>
+
+<script>
+  // ---------------------------------------------------------------------
+  // Lightweight 2D flow-field particle sim — a nod to streamline
+  // visualisation, not a physically accurate solver. Pure canvas, no
+  // dependencies. Pauses automatically for prefers-reduced-motion.
+  // ---------------------------------------------------------------------
+  const canvas = document.getElementById("flow-canvas") as HTMLCanvasElement | null;
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  if (canvas && !prefersReducedMotion) {
+    const ctx = canvas.getContext("2d")!;
+    let width = 0;
+    let height = 0;
+    let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const resize = () => {
+      width = canvas.clientWidth;
+      height = canvas.clientHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+    };
+    resize();
+    window.addEventListener("resize", () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      resize();
+    });
+
+    // Simplex-ish pseudo-noise via layered sine waves — cheap, deterministic,
+    // gives a believable vortex-like vector field without a real noise lib.
+    function fieldAngle(x: number, y: number, t: number) {
+      const s = 0.0022;
+      return (
+        Math.sin(x * s + t * 0.6) * 1.4 +
+        Math.cos(y * s * 1.3 - t * 0.4) * 1.4 +
+        Math.sin((x + y) * s * 0.7 + t * 0.2)
+      );
+    }
+
+    const COUNT = 400;
+    type P = { x: number; y: number; life: number; maxLife: number; hue: "flow" | "vortex" };
+    const particles: P[] = [];
+
+    function spawn(p?: P): P {
+      const hue: "flow" | "vortex" = Math.random() > 0.82 ? "vortex" : "flow";
+      const life = 0;
+      const maxLife = 140 + Math.random() * 160;
+      const x = Math.random() * width;
+      const y = Math.random() * height;
+      if (p) {
+        p.x = x;
+        p.y = y;
+        p.life = life;
+        p.maxLife = maxLife;
+        p.hue = hue;
+        return p;
+      }
+      return { x, y, life, maxLife, hue };
+    }
+
+    for (let i = 0; i < COUNT; i++) particles.push(spawn());
+
+    let t = 0;
+    let raf = 0;
+
+    function step() {
+      t += 0.6;
+      ctx.fillStyle = "rgba(5, 8, 13, 0.14)"; // trailing fade
+      ctx.fillRect(0, 0, width, height);
+
+      for (const p of particles) {
+        const angle = fieldAngle(p.x, p.y, t);
+        const speed = 1.2;
+        const nx = p.x + Math.cos(angle) * speed;
+        const ny = p.y + Math.sin(angle) * speed;
+
+        const color = p.hue === "flow" ? "0, 229, 255" : "255, 122, 26";
+        const alpha = Math.min(1, p.life / 20) * (1 - p.life / p.maxLife) * 0.9;
+
+        ctx.strokeStyle = `rgba(${color}, ${alpha})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(nx, ny);
+        ctx.stroke();
+
+        p.x = nx;
+        p.y = ny;
+        p.life++;
+
+        if (
+          p.life > p.maxLife ||
+          p.x < 0 ||
+          p.x > width ||
+          p.y < 0 ||
+          p.y > height
+        ) {
+          spawn(p);
+        }
+      }
+
+      raf = requestAnimationFrame(step);
+    }
+
+    // Only animate while the hero is visible — saves battery on long pages.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          raf = requestAnimationFrame(step);
+        } else {
+          cancelAnimationFrame(raf);
+        }
+      },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
+  }
+</script>
