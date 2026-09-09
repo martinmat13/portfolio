@@ -11,12 +11,25 @@ const links = [
 ---
 
 <BaseLayout title="About" description="Bio, contact links, and CV.">
-  <section class="max-w-3xl mx-auto px-6 py-20">
-    <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight">
-      About
-    </h1>
+  <!-- Interactive Convergence Canvas Header -->
+  <section class="relative overflow-hidden border-b border-hairline bg-void pt-20 pb-16 sm:pt-28 sm:pb-20" data-fluid-reveal>
+    <canvas id="convergence-canvas" class="absolute inset-0 w-full h-full opacity-70"></canvas>
+    <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-void pointer-events-none"></div>
 
-    <div class="prose prose-invert prose-a:text-flow max-w-none mt-8">
+    <div class="relative z-10 max-w-3xl mx-auto px-6 pointer-events-none">
+      <p class="font-mono text-xs uppercase tracking-[0.24em] text-flow pointer-events-auto">End of the line / Thank you for visiting</p>
+      <h1 class="font-display text-4xl sm:text-5xl text-ink tracking-tight mt-4 pointer-events-auto">
+        About & <span class="text-flow">Convergence</span>
+      </h1>
+      <p class="text-ink-muted mt-4 text-lg leading-relaxed pointer-events-auto">
+        Thanks for taking the time to explore my corner of the web. Whether you're here to inspect my numerical solvers or browsing my travel field notes, I hope you found your visit worthwhile. The door's always open for a return trip.
+      </p>
+    </div>
+  </section>
+
+  <!-- Main Content & Contact Section -->
+  <section class="max-w-3xl mx-auto px-6 py-16">
+    <div class="prose prose-invert prose-a:text-flow max-w-none">
       <p>
         I'm an engineer working at the intersection of computational fluid
         dynamics, hydrodynamics, and numerical modelling. Outside the mesh, I spend time around railways and behind a camera —
@@ -32,6 +45,7 @@ const links = [
       </p>
     </div>
 
+    <!-- Links and CV -->
     <div class="mt-10 flex flex-wrap gap-4">
       {links.map((l) => (
         <a
@@ -51,5 +65,142 @@ const links = [
         Download CV
       </a>
     </div>
+
+    <!-- Friendly Return Invitation Footer Note -->
+    <div class="mt-16 pt-8 border-t border-hairline flex items-center justify-between font-mono text-xs text-ink-faint">
+      <span>// System Status: Session complete</span>
+      <a href="/" class="hover:text-flow transition-colors">Return to Homepage &rarr;</a>
+    </div>
   </section>
 </BaseLayout>
+
+<script>
+  // --------------------------------------------------------
+  // CONVERGENCE CANVAS ANIMATION (Safe, crash-proof, bright)
+  // Particles flow inward, symbolizing a completed journey/convergence
+  // --------------------------------------------------------
+  const canvas = document.getElementById("convergence-canvas") as HTMLCanvasElement | null;
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (canvas && !prefersReducedMotion) {
+    const ctx = canvas.getContext("2d")!;
+    let width = 0, height = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let mx = -1000, my = -1000, isRunning = false;
+
+    const resize = () => {
+      width = canvas.clientWidth; height = canvas.clientHeight;
+      canvas.width = width * dpr; canvas.height = height * dpr;
+      ctx.scale(dpr, dpr);
+    };
+    resize();
+    
+    window.addEventListener("resize", () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      resize();
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      mx = e.clientX - rect.left;
+      my = e.clientY - rect.top;
+    });
+    
+    window.addEventListener("mouseleave", () => { 
+      mx = -1000; my = -1000; 
+    });
+
+    const COUNT = 120;
+    type Particle = { x: number; y: number; vx: number; vy: number; size: number; color: string };
+    const particles: Particle[] = [];
+
+    function spawn(): Particle {
+      // Spawn particles randomly around the edges, heading toward the center
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.max(width, height) * 0.5 + Math.random() * 100;
+      const centerX = width / 2;
+      const centerY = height / 2;
+      
+      const isVortex = Math.random() > 0.8;
+      const color = isVortex ? "255, 122, 26" : "0, 229, 255";
+
+      return {
+        x: centerX + Math.cos(angle) * dist,
+        y: centerY + Math.sin(angle) * dist,
+        vx: (centerX - (centerX + Math.cos(angle) * dist)) * 0.005,
+        vy: (centerY - (centerY + Math.sin(angle) * dist)) * 0.005,
+        size: 1 + Math.random() * 2,
+        color: color
+      };
+    }
+
+    for (let i = 0; i < COUNT; i++) particles.push(spawn());
+
+    function step() {
+      if (!isRunning) return;
+
+      // Soft fading background trail
+      ctx.fillStyle = "rgba(5, 8, 13, 0.12)";
+      ctx.fillRect(0, 0, width, height);
+
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+
+        // Gentle pull towards center (convergence)
+        const dx = centerX - p.x;
+        const dy = centerY - p.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        p.vx += (dx / dist) * 0.02;
+        p.vy += (dy / dist) * 0.02;
+
+        // Dampen velocity so they orbit gently near the center
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+
+        // Mouse interaction (repel slightly if cursor is near)
+        const mdx = p.x - mx;
+        const mdy = p.y - my;
+        const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (mdx < 150 && mdy < 150 && mdist < 150 && mdist > 0) {
+          p.vx += (mdx / mdist) * 0.5;
+          p.vy += (mdy / mdist) * 0.5;
+        }
+
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Draw particle
+        ctx.fillStyle = `rgba(${p.color}, 0.85)`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Respawn if they get too close to center or drift away
+        if (dist < 20 || p.x < 0 || p.x > width || p.y < 0 || p.y > height) {
+          particles[i] = spawn();
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!isRunning) {
+            isRunning = true;
+            requestAnimationFrame(step);
+          }
+        } else {
+          isRunning = false;
+        }
+      },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
+  }
+</script>
