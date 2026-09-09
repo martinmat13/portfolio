@@ -20,7 +20,7 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
   <!-- 1. NEW INTERACTIVE CANVAS HERO -->
   <section class="relative overflow-hidden border-b border-hairline bg-void pt-20 pb-12 sm:pt-28 sm:pb-16" data-fluid-reveal>
     <!-- Wind Tunnel Canvas -->
-    <canvas id="wind-tunnel-canvas" class="absolute inset-0 w-full h-full opacity-60"></canvas>
+    <canvas id="wind-tunnel-canvas" class="absolute inset-0 w-full h-full opacity-70"></canvas>
     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-void pointer-events-none"></div>
 
     <!-- Header Content & Filter (Placed over the canvas) -->
@@ -114,7 +114,7 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
 
 <script>
   // --------------------------------------------------------
-  // 1. PROJECT FILTER LOGIC (Your existing code)
+  // 1. PROJECT FILTER LOGIC
   // --------------------------------------------------------
   const entries = document.querySelectorAll<HTMLElement>("[data-project-year]");
   const filter = document.querySelector<HTMLSelectElement>("#project-year-filter");
@@ -130,7 +130,7 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
   });
 
   // --------------------------------------------------------
-  // 2. WIND TUNNEL CANVAS LOGIC
+  // 2. WIND TUNNEL CANVAS LOGIC (Crash Fixed & Brightened)
   // --------------------------------------------------------
   const canvas = document.getElementById("wind-tunnel-canvas") as HTMLCanvasElement | null;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -139,6 +139,7 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
     const ctx = canvas.getContext("2d")!;
     let width = 0, height = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
     let mx = -1000, my = -1000, targetMx = -1000, targetMy = -1000;
+    let isRunning = false; // THE FIX: Prevents animation loops from multiplying and crashing
 
     const resize = () => {
       width = canvas.clientWidth; height = canvas.clientHeight;
@@ -146,17 +147,24 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
       ctx.scale(dpr, dpr);
     };
     resize();
-    window.addEventListener("resize", resize);
+    
+    window.addEventListener("resize", () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      resize();
+    });
 
-    // Track mouse coordinates relative to the canvas
     window.addEventListener("mousemove", (e) => {
       const rect = canvas.getBoundingClientRect();
       targetMx = e.clientX - rect.left;
       targetMy = e.clientY - rect.top;
     });
-    window.addEventListener("mouseleave", () => { targetMx = -1000; targetMy = -1000; });
+    
+    window.addEventListener("mouseleave", () => { 
+      targetMx = -1000; targetMy = -1000; 
+    });
 
-    const COUNT = 300;
+    const COUNT = 250;
     type P = { x: number; y: number; speed: number; length: number; hue: string };
     const particles: P[] = Array.from({ length: COUNT }, () => spawn());
 
@@ -165,19 +173,22 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
       const data = {
         x: p ? -50 : Math.random() * width, 
         y: Math.random() * height,
-        speed: 1.5 + Math.random() * 2,
-        length: 20 + Math.random() * 40,
-        hue: isVortex ? "255, 122, 26" : "0, 229, 255" // Combines your 'vortex' and 'flow' theme colors
+        speed: 1.5 + Math.random() * 2.5,
+        length: 25 + Math.random() * 45,
+        hue: isVortex ? "255, 122, 26" : "0, 229, 255" 
       };
       if (p) Object.assign(p, data);
       return p || data;
     }
 
     function step() {
-      ctx.fillStyle = "rgba(5, 8, 13, 0.2)"; // Trailing fade effect matching your bg-void
+      // THE FIX: Halts loop execution immediately if out of view
+      if (!isRunning) return;
+
+      // Brighter fade trail (0.10 leaves a longer, vibrant glow)
+      ctx.fillStyle = "rgba(5, 8, 13, 0.10)"; 
       ctx.fillRect(0, 0, width, height);
 
-      // Smooth mouse interpolation
       mx += (targetMx - mx) * 0.1;
       my += (targetMy - my) * 0.1;
 
@@ -185,44 +196,53 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
         let vx = p.speed;
         let vy = 0;
 
-        // Mouse Repulsion Effect (Simulating a bluff body in the flow)
         const dx = p.x - mx;
         const dy = p.y - my;
         const distSq = dx * dx + dy * dy;
-        const radius = 120;
+        const radius = 130;
 
         if (distSq < radius * radius && distSq > 0) {
           const dist = Math.sqrt(distSq);
           const force = (radius - dist) / radius;
-          vx += (dx / dist) * force * 4.5;
-          vy += (dy / dist) * force * 4.5;
+          vx += (dx / dist) * force * 5;
+          vy += (dy / dist) * force * 5;
         }
 
         const nx = p.x + vx;
         const ny = p.y + vy;
 
-        ctx.strokeStyle = `rgba(${p.hue}, 0.7)`;
-        ctx.lineWidth = 1.5;
+        // Brighter particle stroke styling
+        ctx.strokeStyle = `rgba(${p.hue}, 0.9)';`;
+        ctx.strokeStyle = `rgba(${p.hue}, 0.85)`;
+        ctx.lineWidth = 2.0;
         ctx.beginPath();
-        ctx.moveTo(p.x - vx * 4, p.y - vy * 4); // Draw dynamic trail
+        ctx.moveTo(p.x - vx * 4, p.y - vy * 4); 
         ctx.lineTo(nx, ny);
         ctx.stroke();
 
         p.x = nx;
         p.y = ny;
 
-        // Respawn particles when they exit the screen
         if (p.x > width + 50 || p.y < -50 || p.y > height + 50) spawn(p);
       }
+      
       requestAnimationFrame(step);
     }
     
-    // Only run animation when canvas is in view to save performance
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        requestAnimationFrame(step);
-      }
-    });
+    // THE FIX: Safe intersection observer toggle
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!isRunning) {
+            isRunning = true;
+            requestAnimationFrame(step);
+          }
+        } else {
+          isRunning = false;
+        }
+      },
+      { threshold: 0 }
+    );
     observer.observe(canvas);
   }
 </script>
