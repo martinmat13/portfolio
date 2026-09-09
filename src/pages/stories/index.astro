@@ -12,13 +12,13 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
   title="Stories"
   description="Trainspotting, humour, photography, and narrative alongside the technical work."
 >
-  <!-- 1. NEW INTERACTIVE CANVAS HERO -->
+  <!-- 1. NEW SACRED TIMELINE CANVAS HERO -->
   <section class="relative overflow-hidden border-b border-hairline bg-void pt-20 pb-12 sm:pt-28 sm:pb-16" data-fluid-reveal>
-    <!-- Light Trails Canvas -->
-    <canvas id="train-trails-canvas" class="absolute inset-0 w-full h-full opacity-70"></canvas>
+    <!-- Temporal Loom Canvas -->
+    <canvas id="timeline-canvas" class="absolute inset-0 w-full h-full opacity-80"></canvas>
     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-void pointer-events-none"></div>
 
-    <!-- Header Content & Filter (Placed over the canvas) -->
+    <!-- Header Content & Filter -->
     <div class="relative z-10 max-w-6xl mx-auto px-6 grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end pointer-events-none">
       <div>
         <p class="font-mono text-xs uppercase tracking-[0.24em] text-vortex pointer-events-auto">Field notes / {stories.length} entries</p>
@@ -71,9 +71,7 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
 </BaseLayout>
 
 <script>
-  // --------------------------------------------------------
-  // 1. STORY FILTER LOGIC (Your existing code)
-  // --------------------------------------------------------
+  // 1. STORY FILTER LOGIC 
   const cards = document.querySelectorAll<HTMLElement>(".story-card[data-story-year]");
   const filter = document.querySelector<HTMLSelectElement>("#story-year-filter");
   const status = document.querySelector<HTMLElement>("#story-filter-status");
@@ -87,80 +85,105 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
     if (status) status.textContent = year === "all" ? "Showing all stories" : `Showing ${visibleCount} ${year} ${visibleCount === 1 ? "story" : "stories"}`;
   });
 
-  // --------------------------------------------------------
-  // 2. HIGH-SPEED TRAIN LIGHT TRAILS LOGIC
-  // --------------------------------------------------------
-  const canvas = document.getElementById("train-trails-canvas") as HTMLCanvasElement | null;
+  // 2. THE SACRED TIMELINE / MEMORY LOOM LOGIC
+  const canvas = document.getElementById("timeline-canvas") as HTMLCanvasElement | null;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (canvas && !prefersReducedMotion) {
     const ctx = canvas.getContext("2d")!;
     let width = 0, height = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let targetMy = 0, currentMy = 0;
+    let mx = -1000, my = -1000, time = 0;
 
     const resize = () => {
       width = canvas.clientWidth; height = canvas.clientHeight;
       canvas.width = width * dpr; canvas.height = height * dpr;
       ctx.scale(dpr, dpr);
-      targetMy = height / 2;
-      currentMy = height / 2;
     };
     resize();
     window.addEventListener("resize", resize);
 
-    // Track mouse Y for perspective shift
+    // Track mouse to "grab" the timeline
     window.addEventListener("mousemove", (e) => {
       const rect = canvas.getBoundingClientRect();
-      targetMy = e.clientY - rect.top;
+      mx = e.clientX - rect.left;
+      my = e.clientY - rect.top;
     });
+    window.addEventListener("mouseleave", () => { mx = -1000; my = -1000; });
 
-    const COUNT = 150;
-    type Trail = { x: number; y: number; z: number; length: number; speed: number; color: string };
-    const trails: Trail[] = Array.from({ length: COUNT }, () => spawn());
+    const COUNT = 250;
+    type Thread = { x: number; y: number; speed: number; isBranch: boolean; branchOffset: number; color: string; phase: number };
+    const threads: Thread[] = Array.from({ length: COUNT }, () => spawn(true));
 
-    function spawn(t?: Trail): Trail {
-      // ICE train & station light colors (orange, yellow, blue, white)
-      const colors = ["255, 122, 26", "255, 200, 100", "0, 229, 255", "255, 255, 255"];
-      const data = {
-        x: width + Math.random() * width, // Spawn off-screen right
-        y: (Math.random() - 0.5) * height * 2,
-        z: 0.1 + Math.random() * 0.9, // depth (smaller = further away = slower)
-        length: 50 + Math.random() * 150,
-        speed: 10 + Math.random() * 20,
-        color: colors[Math.floor(Math.random() * colors.length)]
+    function spawn(randomX = false): Thread {
+      // Loki thematic logic: 5% chance a timeline "branches" off.
+      const isBranch = Math.random() > 0.95; 
+      
+      // Core timeline threads are Flow (cyan) or White/Gold. Branches turn Vortex (orange).
+      const color = isBranch ? "255, 122, 26" : (Math.random() > 0.5 ? "0, 229, 255" : "200, 240, 255");
+      
+      return {
+        x: randomX ? Math.random() * width : -50,
+        y: height / 2,
+        speed: 2 + Math.random() * 3,
+        isBranch: isBranch,
+        branchOffset: isBranch ? (Math.random() - 0.5) * (height * 0.8) : (Math.random() - 0.5) * 30, // Branches go wide, core stays tight
+        color: color,
+        phase: Math.random() * Math.PI * 2
       };
-      if (t) Object.assign(t, data);
-      return t || data;
     }
 
     function step() {
-      ctx.fillStyle = "rgba(5, 8, 13, 0.25)"; // Motion blur fade
+      time += 0.02;
+      
+      // Long motion blur for a glowing thread look
+      ctx.fillStyle = "rgba(5, 8, 13, 0.15)";
       ctx.fillRect(0, 0, width, height);
 
-      // Smooth mouse Y interpolation
-      currentMy += (targetMy - currentMy) * 0.05;
-      const perspectiveOffset = (currentMy - height / 2) * 0.5;
+      // Base undulating wave of the timeline
+      const baseWaveY = (x: number) => height / 2 + Math.sin(x * 0.003 + time) * 60;
 
-      for (const t of trails) {
-        const speed = t.speed * t.z;
-        t.x -= speed; // Move left
+      for (const t of threads) {
+        const oldX = t.x;
+        const oldY = t.y;
 
-        // Draw trail
-        const actualY = height / 2 + t.y * t.z + perspectiveOffset * t.z;
-        
-        ctx.strokeStyle = `rgba(${t.color}, ${t.z})`;
-        ctx.lineWidth = 2 * t.z;
-        ctx.lineCap = "round";
+        t.x += t.speed;
+
+        // Calculate where this specific thread wants to be
+        let targetY = baseWaveY(t.x) + t.branchOffset;
+
+        // Mouse Interaction: Bending the timeline
+        const distX = Math.abs(t.x - mx);
+        if (distX < 250) {
+          // If the mouse is close on the X axis, pull the timeline toward the mouse Y
+          const influence = Math.pow(1 - distX / 250, 2); 
+          targetY = targetY * (1 - influence) + my * influence;
+        }
+
+        // Smoothly interpolate current Y to target Y
+        t.y += (targetY - t.y) * 0.05;
+
+        // Draw the thread
+        ctx.strokeStyle = `rgba(${t.color}, ${t.isBranch ? 0.8 : 0.4})`;
+        ctx.lineWidth = t.isBranch ? 1.5 : 1;
         ctx.beginPath();
-        ctx.moveTo(t.x, actualY);
-        ctx.lineTo(t.x + t.length * t.z, actualY);
+        ctx.moveTo(oldX, oldY);
+        ctx.lineTo(t.x, t.y);
         ctx.stroke();
 
-        if (t.x < -t.length) spawn(t); // Reset when off-screen left
+        // Respawn when it goes off screen
+        if (t.x > width + 50) {
+          const newThread = spawn();
+          t.x = newThread.x;
+          t.y = newThread.y;
+          t.speed = newThread.speed;
+          t.isBranch = newThread.isBranch;
+          t.branchOffset = newThread.branchOffset;
+          t.color = newThread.color;
+        }
       }
     }
 
-    // Run animation only when in view
+    // Intersection observer for performance
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         requestAnimationFrame(function loop() {
