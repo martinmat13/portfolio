@@ -1,57 +1,81 @@
 ---
-import HUDPanel from "./HUDPanel.astro";
+// src/components/Hero.astro
+// Note: You can remove the HUDPanel import if you are fully replacing it with the photo layout.
 ---
 
 <section class="fluid-reveal relative overflow-hidden border-b border-hairline" data-fluid-reveal>
+  <!-- Interactive Flow Canvas -->
   <canvas id="flow-canvas" class="absolute inset-0 w-full h-full opacity-70"></canvas>
   <div class="absolute inset-0 blueprint-grid opacity-[0.15] pointer-events-none"></div>
-  <div
-    class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-void pointer-events-none"
-  >
-  </div>
+  <div class="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-void pointer-events-none"></div>
 
   <div class="relative max-w-6xl mx-auto px-6 pt-28 pb-24 sm:pt-36 sm:pb-32">
-    <div class="grid lg:grid-cols-[1fr_auto] gap-12 items-end">
-      <div>
-        <h1
-          class="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight text-ink"
-        >
+    <div class="grid md:grid-cols-[1fr_auto] gap-12 items-center">
+      
+      <!-- Left Column: Headline & Bio -->
+      <div class="flex flex-col z-10">
+        <div class="inline-block mb-6">
+          <span class="bg-flow/10 text-flow border border-flow/20 rounded-full px-3 py-1 text-sm font-mono uppercase tracking-wider">
+            Computational Engineer
+          </span>
+        </div>
+
+        <h1 class="font-display text-5xl sm:text-6xl lg:text-7xl leading-[1.05] tracking-tight text-ink">
           I make turbulence
           <br />
           <span class="text-flow glow-text-flow">behave.</span>
         </h1>
+        
         <p class="mt-6 max-w-xl text-ink-muted text-lg leading-relaxed">
-          Computational fluid dynamics, hydrodynamics, and numerical
-          modelling — OpenFOAM, ANSYS Fluent, and LIGGGHTS, applied to
-          problems that don't have closed-form answers. Occasionally I
-          also chase trains and tell stories.
+          Hi, I'm Martin. I specialize in CFD, hydrodynamics, and numerical modelling. 
+          I build solvers and chase convergence in OpenFOAM, ANSYS Fluent, and LIGGGHTS 
+          for problems that don't have closed-form answers. When I'm not doing that, 
+          I'm usually exploring Europe's railways or telling stories.
         </p>
+        
         <div class="mt-9 flex flex-wrap gap-4">
           <a
             href="/projects"
-            class="font-mono text-sm bg-flow text-void px-5 py-3 rounded shadow-glow-flow hover:brightness-110 transition"
+            class="font-mono text-sm bg-flow text-void px-6 py-3 rounded shadow-glow-flow hover:brightness-110 transition text-center"
           >
             View CFD work
           </a>
           <a
-            href="/stories"
-            class="font-mono text-sm border border-hairline text-ink px-5 py-3 rounded hover:border-vortex/50 hover:text-vortex transition"
+            href="/about"
+            class="font-mono text-sm border border-hairline text-ink px-6 py-3 rounded hover:border-vortex/50 hover:text-vortex transition text-center"
           >
-            Read the other stuff
+            More About Me
           </a>
         </div>
       </div>
 
-      <HUDPanel />
+      <!-- Right Column: Profile Photo (Replaces HUDPanel) -->
+      <div class="relative group mx-auto md:ml-auto md:mr-10 w-64 md:w-80 mt-10 md:mt-0 z-10 pointer-events-none">
+        <!-- Decorative background glow -->
+        <div class="absolute -inset-1 bg-gradient-to-r from-flow to-cyan-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+        
+        <!-- The Image -->
+        <img 
+          src="/images/martin-profile.jpg" 
+          alt="Martin Mathew" 
+          class="relative rounded-2xl border border-gray-800 shadow-2xl object-cover aspect-[4/5] grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out pointer-events-auto"
+        />
+        
+        <!-- Decorative tech accents -->
+        <div class="absolute -bottom-4 -right-4 bg-void border border-hairline px-3 py-2 rounded font-mono text-xs text-flow shadow-lg hidden md:block">
+          $ ./run_simulation.sh
+        </div>
+      </div>
+
     </div>
   </div>
 </section>
 
 <script>
   // ---------------------------------------------------------------------
-  // Lightweight 2D flow-field particle sim — a nod to streamline
-  // visualisation, not a physically accurate solver. Pure canvas, no
-  // dependencies. Pauses automatically for prefers-reduced-motion.
+  // Lightweight 2D flow-field particle sim — now interactive!
+  // Particles act as a fluid flow, and the mouse acts as a bluff body 
+  // (like a cylinder) pushing the streamlines out of the way.
   // ---------------------------------------------------------------------
   const canvas = document.getElementById("flow-canvas") as HTMLCanvasElement | null;
   const prefersReducedMotion = window.matchMedia(
@@ -63,6 +87,12 @@ import HUDPanel from "./HUDPanel.astro";
     let width = 0;
     let height = 0;
     let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    // Mouse tracking variables
+    let mx = -1000;
+    let my = -1000;
+    let targetMx = -1000;
+    let targetMy = -1000;
 
     const resize = () => {
       width = canvas.clientWidth;
@@ -78,8 +108,18 @@ import HUDPanel from "./HUDPanel.astro";
       resize();
     });
 
-    // Simplex-ish pseudo-noise via layered sine waves — cheap, deterministic,
-    // gives a believable vortex-like vector field without a real noise lib.
+    // Track mouse movement
+    window.addEventListener("mousemove", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      targetMx = e.clientX - rect.left;
+      targetMy = e.clientY - rect.top;
+    });
+
+    window.addEventListener("mouseleave", () => {
+      targetMx = -1000; 
+      targetMy = -1000;
+    });
+
     function fieldAngle(x: number, y: number, t: number) {
       const s = 0.0022;
       return (
@@ -117,14 +157,36 @@ import HUDPanel from "./HUDPanel.astro";
 
     function step() {
       t += 0.6;
-      ctx.fillStyle = "rgba(5, 8, 13, 0.14)"; // trailing fade
+      ctx.fillStyle = "rgba(5, 8, 13, 0.14)"; 
       ctx.fillRect(0, 0, width, height);
+
+      // Smoothly interpolate mouse position
+      mx += (targetMx - mx) * 0.1;
+      my += (targetMy - my) * 0.1;
 
       for (const p of particles) {
         const angle = fieldAngle(p.x, p.y, t);
         const speed = 1.2;
-        const nx = p.x + Math.cos(angle) * speed;
-        const ny = p.y + Math.sin(angle) * speed;
+        
+        // Base velocity vector
+        let vx = Math.cos(angle) * speed;
+        let vy = Math.sin(angle) * speed;
+
+        // Mouse interaction (Repulsion Force)
+        const dx = p.x - mx;
+        const dy = p.y - my;
+        const distSq = dx * dx + dy * dy;
+        const radius = 120; // Size of the interaction area
+
+        if (distSq < radius * radius && distSq > 0) {
+          const dist = Math.sqrt(distSq);
+          const force = (radius - dist) / radius; // Stronger closer to center
+          vx += (dx / dist) * force * 3.5; // Push outwards
+          vy += (dy / dist) * force * 3.5;
+        }
+
+        const nx = p.x + vx;
+        const ny = p.y + vy;
 
         const color = p.hue === "flow" ? "0, 229, 255" : "255, 122, 26";
         const alpha = Math.min(1, p.life / 20) * (1 - p.life / p.maxLife) * 0.9;
@@ -154,7 +216,6 @@ import HUDPanel from "./HUDPanel.astro";
       raf = requestAnimationFrame(step);
     }
 
-    // Only animate while the hero is visible — saves battery on long pages.
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
