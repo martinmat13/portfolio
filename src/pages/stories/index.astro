@@ -85,7 +85,7 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
     if (status) status.textContent = year === "all" ? "Showing all stories" : `Showing ${visibleCount} ${year} ${visibleCount === 1 ? "story" : "stories"}`;
   });
 
-  // 2. THE SACRED TIMELINE / MEMORY LOOM LOGIC (Browser Crash Fixed!)
+  // 2. THE SACRED TIMELINE (BRIGHTER VERSION)
   const canvas = document.getElementById("timeline-canvas") as HTMLCanvasElement | null;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -114,7 +114,7 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
     });
     window.addEventListener("mouseleave", () => { mx = -1000; my = -1000; });
 
-    const COUNT = 180; // Slightly reduced count for better performance
+    const COUNT = 200; // Increased slightly for a fuller look
     type Thread = { x: number; y: number; speed: number; isBranch: boolean; branchOffset: number; color: string; phase: number };
     const threads: Thread[] = [];
 
@@ -143,12 +143,14 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
     function step() {
       time += 0.015;
       
-      // Motion blur trail effect matching your dark background
-      ctx.fillStyle = "rgba(5, 8, 13, 0.15)";
+      // BRIGHTNESS FIX 1: Lower opacity on the fade leaves longer, brighter glowing trails
+      ctx.fillStyle = "rgba(5, 8, 13, 0.08)";
       ctx.fillRect(0, 0, width, height);
 
-      // Base undulating wave of the timeline
       const baseWaveY = (x: number) => height / 2 + Math.sin(x * 0.003 + time) * 60;
+
+      // Add additive blending for a natural glow effect when threads overlap
+      ctx.globalCompositeOperation = "source-over"; 
 
       for (const t of threads) {
         const oldX = t.x;
@@ -156,28 +158,25 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
 
         t.x += t.speed;
 
-        // Calculate where this specific thread wants to be
         let targetY = baseWaveY(t.x) + t.branchOffset;
 
-        // Mouse Interaction: Bending the timeline
         const distX = Math.abs(t.x - mx);
         if (distX < 250) {
           const influence = Math.pow(1 - distX / 250, 2); 
           targetY = targetY * (1 - influence) + my * influence;
         }
 
-        // Smoothly interpolate current Y to target Y
         t.y += (targetY - t.y) * 0.05;
 
-        // Draw the thread
-        ctx.strokeStyle = `rgba(${t.color}, ${t.isBranch ? 0.9 : 0.5})`;
-        ctx.lineWidth = t.isBranch ? 1.5 : 1;
+        // BRIGHTNESS FIX 2 & 3: Higher opacity (0.85/1.0) and thicker lines (1.5/2.5)
+        ctx.strokeStyle = `rgba(${t.color}, ${t.isBranch ? 1.0 : 0.85})`;
+        ctx.lineWidth = t.isBranch ? 2.5 : 1.5;
+        
         ctx.beginPath();
         ctx.moveTo(oldX, oldY);
         ctx.lineTo(t.x, t.y);
         ctx.stroke();
 
-        // Respawn when it goes off screen
         if (t.x > width + 50) {
           const newThread = spawn();
           t.x = newThread.x;
@@ -192,7 +191,6 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
       raf = requestAnimationFrame(step);
     }
 
-    // Only run the animation when the canvas is actually visible on screen
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
