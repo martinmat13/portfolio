@@ -85,7 +85,7 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
     if (status) status.textContent = year === "all" ? "Showing all stories" : `Showing ${visibleCount} ${year} ${visibleCount === 1 ? "story" : "stories"}`;
   });
 
-  // 2. THE SACRED TIMELINE (BRIGHTER VERSION)
+  // 2. THE SACRED TIMELINE (CRASH FIXED & BRIGHT)
   const canvas = document.getElementById("timeline-canvas") as HTMLCanvasElement | null;
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -93,6 +93,7 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
     const ctx = canvas.getContext("2d")!;
     let width = 0, height = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
     let mx = -1000, my = -1000, time = 0;
+    let isRunning = false; // THE FIX: This lock prevents the browser from crashing
 
     const resize = () => {
       width = canvas.clientWidth; height = canvas.clientHeight;
@@ -100,29 +101,29 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
       ctx.scale(dpr, dpr);
     };
     resize();
+    
     window.addEventListener("resize", () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       resize();
     });
 
-    // Track mouse to "grab" the timeline
     window.addEventListener("mousemove", (e) => {
       const rect = canvas.getBoundingClientRect();
       mx = e.clientX - rect.left;
       my = e.clientY - rect.top;
     });
-    window.addEventListener("mouseleave", () => { mx = -1000; my = -1000; });
+    
+    window.addEventListener("mouseleave", () => { 
+      mx = -1000; my = -1000; 
+    });
 
-    const COUNT = 200; // Increased slightly for a fuller look
+    const COUNT = 200; 
     type Thread = { x: number; y: number; speed: number; isBranch: boolean; branchOffset: number; color: string; phase: number };
     const threads: Thread[] = [];
 
     function spawn(randomX = false): Thread {
-      // 5% chance a timeline "branches" off.
       const isBranch = Math.random() > 0.95; 
-      
-      // Core timeline threads are Flow (cyan) or Light Blue. Branches turn Vortex (orange).
       const color = isBranch ? "255, 122, 26" : (Math.random() > 0.5 ? "0, 229, 255" : "200, 240, 255");
       
       return {
@@ -138,18 +139,16 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
 
     for (let i = 0; i < COUNT; i++) threads.push(spawn(true));
 
-    let raf = 0;
-
     function step() {
+      // THE FIX: If the lock is false, kill the loop immediately
+      if (!isRunning) return; 
+
       time += 0.015;
       
-      // BRIGHTNESS FIX 1: Lower opacity on the fade leaves longer, brighter glowing trails
       ctx.fillStyle = "rgba(5, 8, 13, 0.08)";
       ctx.fillRect(0, 0, width, height);
 
       const baseWaveY = (x: number) => height / 2 + Math.sin(x * 0.003 + time) * 60;
-
-      // Add additive blending for a natural glow effect when threads overlap
       ctx.globalCompositeOperation = "source-over"; 
 
       for (const t of threads) {
@@ -168,7 +167,6 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
 
         t.y += (targetY - t.y) * 0.05;
 
-        // BRIGHTNESS FIX 2 & 3: Higher opacity (0.85/1.0) and thicker lines (1.5/2.5)
         ctx.strokeStyle = `rgba(${t.color}, ${t.isBranch ? 1.0 : 0.85})`;
         ctx.lineWidth = t.isBranch ? 2.5 : 1.5;
         
@@ -188,15 +186,19 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
         }
       }
       
-      raf = requestAnimationFrame(step);
+      requestAnimationFrame(step);
     }
 
+    // THE FIX: The observer now only toggles the lock. It never starts a duplicate loop.
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          raf = requestAnimationFrame(step);
+          if (!isRunning) {
+            isRunning = true;
+            requestAnimationFrame(step);
+          }
         } else {
-          cancelAnimationFrame(raf);
+          isRunning = false;
         }
       },
       { threshold: 0 }
