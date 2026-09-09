@@ -1,7 +1,5 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import YouTubeEmbed from "../../components/YouTubeEmbed.astro";
-import Gallery from "../../components/Gallery.astro";
 import { getCollection } from "astro:content";
 
 const stories = (await getCollection("stories")).sort(
@@ -27,16 +25,13 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
       </div>
 
       <nav aria-label="Filter stories by year" class="story-filter glass-panel p-2">
-        <div class="flex flex-wrap gap-1" role="tablist">
-          <button class="story-filter__button is-active" type="button" data-story-filter="all" role="tab" aria-selected="true">
-            All <span>{stories.length}</span>
-          </button>
+        <label class="story-filter__label" for="story-year-filter">View</label>
+        <select id="story-year-filter" class="story-filter__select" aria-label="Filter stories by year">
+          <option value="all">All years ({stories.length})</option>
           {years.map((year) => (
-            <button class="story-filter__button" type="button" data-story-filter={year} role="tab" aria-selected="false">
-              {year} <span>{stories.filter((story) => story.data.date.getFullYear() === year).length}</span>
-            </button>
+            <option value={year}>{year} ({stories.filter((story) => story.data.date.getFullYear() === year).length})</option>
           ))}
-        </div>
+        </select>
       </nav>
     </header>
 
@@ -49,7 +44,7 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
       {stories.map((s) => {
         const year = s.data.date.getFullYear();
         return (
-          <a href={`#${s.slug}`} class="story-card" data-story-year={year}>
+          <a href={`/stories/${s.slug}`} class="story-card" data-story-year={year}>
             <div class="story-card__topline">
               <span>{s.data.date.toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" })}</span>
               <span class={s.data.kind === "video" ? "text-vortex" : "text-flow"}>{s.data.kind}</span>
@@ -64,58 +59,20 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
       })}
     </div>
 
-    <div class="story-entries">
-      {stories.map(async (s) => {
-        const { Content } = await s.render();
-        const year = s.data.date.getFullYear();
-        return (
-          <article id={s.slug} class="story-entry scroll-mt-24" data-story-year={year}>
-            <div class="story-card__topline">
-              <span>{s.data.date.toLocaleDateString("en-GB", { year: "numeric", month: "short", day: "numeric" })}</span>
-              <span class={s.data.kind === "video" ? "text-vortex" : "text-flow"}>{s.data.kind}</span>
-            </div>
-            <h2 class="mt-3 font-display text-3xl text-ink">{s.data.title}</h2>
-            <p class="mt-3 text-ink-muted">{s.data.summary}</p>
-
-            {s.data.kind === "video" && s.data.youtubeId && (
-              <div class="mt-6">
-                <YouTubeEmbed youtubeId={s.data.youtubeId} title={s.data.title} />
-              </div>
-            )}
-
-            {s.data.kind === "photo" && <Gallery images={s.data.gallery} alt={s.data.title} />}
-
-            <div class="prose prose-invert prose-a:text-flow max-w-none mt-6">
-              <Content />
-            </div>
-          </article>
-        );
-      })}
-    </div>
   </section>
 </BaseLayout>
 
 <script>
-  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-story-filter]");
   const cards = document.querySelectorAll<HTMLElement>(".story-card[data-story-year]");
-  const entries = document.querySelectorAll<HTMLElement>(".story-entry[data-story-year]");
+  const filter = document.querySelector<HTMLSelectElement>("#story-year-filter");
   const status = document.querySelector<HTMLElement>("#story-filter-status");
 
-  buttons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const filter = button.dataset.storyFilter ?? "all";
-      const visibleCount = [...cards].filter((card) => filter === "all" || card.dataset.storyYear === filter).length;
-
-      buttons.forEach((item) => {
-        const active = item === button;
-        item.classList.toggle("is-active", active);
-        item.setAttribute("aria-selected", String(active));
-      });
-      [...cards, ...entries].forEach((card) => {
-        const visible = filter === "all" || card.dataset.storyYear === filter;
-        card.hidden = !visible;
-      });
-      if (status) status.textContent = filter === "all" ? "Showing all stories" : `Showing ${visibleCount} ${filter} ${visibleCount === 1 ? "story" : "stories"}`;
+  filter?.addEventListener("change", () => {
+    const year = filter.value;
+    const visibleCount = [...cards].filter((card) => year === "all" || card.dataset.storyYear === year).length;
+    cards.forEach((card) => {
+      card.hidden = year !== "all" && card.dataset.storyYear !== year;
     });
+    if (status) status.textContent = year === "all" ? "Showing all stories" : `Showing ${visibleCount} ${year} ${visibleCount === 1 ? "story" : "stories"}`;
   });
 </script>

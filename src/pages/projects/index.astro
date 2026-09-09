@@ -28,16 +28,13 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
         </p>
       </div>
       <nav aria-label="Filter projects by year" class="story-filter glass-panel p-2">
-        <div class="flex flex-wrap gap-1" role="tablist">
-          <button class="story-filter__button is-active" type="button" data-project-filter="all" role="tab" aria-selected="true">
-            All <span>{projects.length}</span>
-          </button>
+        <label class="story-filter__label" for="project-year-filter">View</label>
+        <select id="project-year-filter" class="story-filter__select" aria-label="Filter projects by year">
+          <option value="all">All years ({projects.length})</option>
           {years.map((year) => (
-            <button class="story-filter__button" type="button" data-project-filter={year} role="tab" aria-selected="false">
-              {year} <span>{projects.filter((project) => project.data.date.getFullYear() === year).length}</span>
-            </button>
+            <option value={year}>{year} ({projects.filter((project) => project.data.date.getFullYear() === year).length})</option>
           ))}
-        </div>
+        </select>
       </nav>
     </header>
 
@@ -105,28 +102,16 @@ const supportingProjects = projects.filter((project) => project !== featuredProj
 </BaseLayout>
 
 <script>
-  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-project-filter]");
   const entries = document.querySelectorAll<HTMLElement>("[data-project-year]");
+  const filter = document.querySelector<HTMLSelectElement>("#project-year-filter");
   const status = document.querySelector<HTMLElement>("#project-filter-status");
 
-  buttons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const filter = button.dataset.projectFilter ?? "all";
-      const visibleCount = [...entries].filter((entry) => filter === "all" || entry.dataset.projectYear === filter).length;
-
-      buttons.forEach((item) => {
-        const active = item === button;
-        item.classList.toggle("is-active", active);
-        item.setAttribute("aria-selected", String(active));
-      });
-      entries.forEach((entry) => {
-        entry.hidden = filter !== "all" && entry.dataset.projectYear !== filter;
-      });
-      if (status) {
-        status.textContent = filter === "all"
-          ? "Showing all projects"
-          : `Showing ${visibleCount} ${filter} ${visibleCount === 1 ? "project" : "projects"}`;
-      }
+  filter?.addEventListener("change", () => {
+    const year = filter.value;
+    const visibleCount = [...entries].filter((entry) => year === "all" || entry.dataset.projectYear === year).length;
+    entries.forEach((entry) => {
+      entry.hidden = year !== "all" && entry.dataset.projectYear !== year;
     });
+    if (status) status.textContent = year === "all" ? "Showing all projects" : `Showing ${visibleCount} ${year} ${visibleCount === 1 ? "project" : "projects"}`;
   });
 </script>

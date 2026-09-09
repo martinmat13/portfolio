@@ -138,6 +138,15 @@
   .story-filter {
     box-shadow: inset 0 2px 0 theme("colors.vortex.DEFAULT");
   }
+  .story-filter__label {
+    @apply px-3 font-mono text-xs uppercase tracking-wider text-ink-faint;
+  }
+  .story-filter__select {
+    @apply min-w-40 border border-hairline bg-void-raised px-3 py-2 font-mono text-xs text-ink outline-none;
+  }
+  .story-filter__select:focus-visible {
+    @apply border-flow;
+  }
   .story-filter__button {
     @apply inline-flex items-center gap-2 px-3 py-2 font-mono text-xs text-ink-muted transition-colors duration-200;
   }
