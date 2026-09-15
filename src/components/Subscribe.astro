@@ -22,15 +22,13 @@
     <!-- Hidden iframe to prevent page reload on submit -->
     <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
 
-    <!-- EmailOctopus Form -->
-    <!-- EmailOctopus hosted form endpoint -->
+    <!-- EmailOctopus Custom Form -->
     <form 
-      action="https://eocampaign1.com/form/7f85f6c8-b114-11f1-a3a7-3b016ea83be5"
+      action="https://eocampaign1.com/form/7f85f6c8-b114-11f1-a3a7-3b016ea83be5" 
       method="post" 
       target="hidden_iframe"
       class="flex flex-col sm:flex-row gap-3 w-full" 
       id="subscribe-form"
-      aria-describedby="subscribe-status"
     >
       <input
         type="email"
@@ -40,8 +38,9 @@
         placeholder="name@domain.com"
         class="flex-1 bg-void border border-hairline rounded px-4 py-3 text-ink text-sm font-mono focus:outline-none focus:border-flow focus:ring-1 focus:ring-flow transition-all placeholder:text-ink-faint"
       />
+      
       <!-- Hidden honeypot field to prevent bot spam -->
-      <input type="text" name="hp123" tabindex="-1" autocomplete="nope" class="hidden" aria-hidden="true" />
+      <input type="text" name="hp7f85f6c8-b114-11f1-a3a7-3b016ea83be5" tabindex="-1" autocomplete="nope" class="hidden" aria-hidden="true" />
       
       <button
         type="submit"
@@ -50,7 +49,6 @@
         Subscribe &rarr;
       </button>
     </form>
-    <p id="subscribe-status" class="mt-3 text-sm text-ink-muted" aria-live="polite"></p>
   </div>
 
   <!-- Success Overlay (Hidden by default) -->
@@ -70,14 +68,10 @@
   const form = document.getElementById("subscribe-form") as HTMLFormElement | null;
   const successOverlay = document.getElementById("subscribe-success");
   const closeBtn = document.getElementById("close-success");
-  const status = document.getElementById("subscribe-status");
-  const submitBtn = form?.querySelector<HTMLButtonElement>('button[type="submit"]');
   let isSubmitting = false;
 
   form?.addEventListener("submit", () => {
     isSubmitting = true;
-    submitBtn?.setAttribute("disabled", "true");
-    if (status) status.textContent = "Submitting...";
   });
 
   // Listen for the hidden iframe to finish loading (meaning EmailOctopus processed the request)
@@ -86,8 +80,6 @@
     if (isSubmitting) {
       successOverlay?.classList.remove("hidden");
       form?.reset();
-      submitBtn?.removeAttribute("disabled");
-      if (status) status.textContent = "";
       isSubmitting = false;
     }
   });
