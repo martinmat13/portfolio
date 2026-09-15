@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { getCollection } from "astro:content";
+import Subscribe from "../../components/Subscribe.astro";
 
 const stories = (await getCollection("stories")).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf() || a.slug.localeCompare(b.slug)
@@ -68,6 +69,9 @@ const years = [...new Set(stories.map((story) => story.data.date.getFullYear()))
       })}
     </div>
   </section>
+  <div class="max-w-6xl mx-auto px-6 pb-20">
+  <Subscribe />
+</div>
 </BaseLayout>
 
 <script>

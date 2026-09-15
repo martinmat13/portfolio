@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import StoryLayout from "../../layouts/StoryLayout.astro";
+import Subscribe from "../../components/Subscribe.astro";
 
 export async function getStaticPaths() {
   const stories = await getCollection("stories");
