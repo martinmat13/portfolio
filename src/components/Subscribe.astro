@@ -3,28 +3,25 @@
 ---
 
 <section class="border border-hairline rounded-lg p-8 sm:p-10 bg-void relative overflow-hidden group">
-  <!-- Subtle decorative background glow -->
   <div class="absolute -top-32 -right-32 w-64 h-64 bg-flow/10 rounded-full blur-3xl group-hover:bg-flow/20 transition-colors duration-700 pointer-events-none"></div>
 
   <div class="relative z-10 grid md:grid-cols-2 gap-8 items-center">
-    
-    <!-- Text Content -->
     <div>
       <p class="font-mono text-xs uppercase tracking-[0.2em] text-vortex mb-3">System Notification</p>
       <h2 class="font-display text-2xl sm:text-3xl text-ink">
         Subscribe to <span class="text-flow">Field Notes</span>
       </h2>
       <p class="mt-3 text-ink-muted text-sm leading-relaxed max-w-md">
-        Get an email whenever I publish a new story, travelogue, or engineering reflection. No spam, no automated campaigns. Just a simple ping with a summary and a link.
+        Get an email whenever I publish a new story, travelogue, or engineering reflection. No spam. Just a simple ping with a summary and a link.
       </p>
     </div>
 
-    <!-- Hidden iframe to prevent page reload on submit -->
-    <iframe name="hidden_iframe" id="hidden_iframe" style="display:none;"></iframe>
+    <!-- Hidden iframe catches the page redirect -->
+    <iframe name="hidden_iframe" id="hidden_iframe" class="hidden" style="display:none;"></iframe>
 
-    <!-- EmailOctopus Custom Form -->
+    <!-- Direct HTML Form connected to your specific Kit account -->
     <form 
-      action="https://eocampaign1.com/form/7f85f6c8-b114-11f1-a3a7-3b016ea83be5" 
+      action="https://app.kit.com/forms/9936438/subscriptions" 
       method="post" 
       target="hidden_iframe"
       class="flex flex-col sm:flex-row gap-3 w-full" 
@@ -32,31 +29,26 @@
     >
       <input
         type="email"
-        name="emailAddress"
-        id="emailAddress"
+        name="email_address"
         required
         placeholder="name@domain.com"
         class="flex-1 bg-void border border-hairline rounded px-4 py-3 text-ink text-sm font-mono focus:outline-none focus:border-flow focus:ring-1 focus:ring-flow transition-all placeholder:text-ink-faint"
       />
-      
-      <!-- Hidden honeypot field to prevent bot spam -->
-      <input type="text" name="hp7f85f6c8-b114-11f1-a3a7-3b016ea83be5" tabindex="-1" autocomplete="nope" class="hidden" aria-hidden="true" />
-      
       <button
         type="submit"
-        class="font-mono text-sm bg-flow text-void px-6 py-3 rounded shadow-glow-flow hover:brightness-110 transition shrink-0 whitespace-nowrap"
+        class="font-mono text-sm bg-flow text-void px-6 py-3 rounded shadow-glow-flow hover:brightness-110 transition shrink-0"
       >
         Subscribe &rarr;
       </button>
     </form>
   </div>
 
-  <!-- Success Overlay (Hidden by default) -->
+  <!-- Success Overlay -->
   <div id="subscribe-success" class="hidden absolute inset-0 bg-void/95 backdrop-blur-sm z-20 flex flex-col items-center justify-center border border-flow/30 rounded-lg">
     <p class="text-flow font-mono text-sm mb-2">// Status 200: OK</p>
     <h3 class="text-ink font-display text-2xl">Subscription Confirmed.</h3>
     <p class="text-ink-muted mt-2 text-sm text-center max-w-sm">
-      Welcome aboard. You will receive a confirmation email shortly.
+      Welcome aboard. Your welcome note is on its way.
     </p>
     <button id="close-success" class="mt-6 text-xs font-mono border border-hairline px-4 py-2 rounded text-ink-muted hover:text-ink hover:border-ink/50 transition">
       Close Window [x]
@@ -66,6 +58,7 @@
 
 <script>
   const form = document.getElementById("subscribe-form") as HTMLFormElement | null;
+  const iframe = document.getElementById("hidden_iframe") as HTMLIFrameElement | null;
   const successOverlay = document.getElementById("subscribe-success");
   const closeBtn = document.getElementById("close-success");
   let isSubmitting = false;
@@ -74,8 +67,6 @@
     isSubmitting = true;
   });
 
-  // Listen for the hidden iframe to finish loading (meaning EmailOctopus processed the request)
-  const iframe = document.getElementById("hidden_iframe") as HTMLIFrameElement | null;
   iframe?.addEventListener("load", () => {
     if (isSubmitting) {
       successOverlay?.classList.remove("hidden");
