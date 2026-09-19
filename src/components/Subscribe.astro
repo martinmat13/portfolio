@@ -3,9 +3,12 @@
 ---
 
 <section class="border border-hairline rounded-lg p-8 sm:p-10 bg-void relative overflow-hidden group">
+  <!-- Subtle decorative background glow -->
   <div class="absolute -top-32 -right-32 w-64 h-64 bg-flow/10 rounded-full blur-3xl group-hover:bg-flow/20 transition-colors duration-700 pointer-events-none"></div>
 
   <div class="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+    
+    <!-- Text Content -->
     <div>
       <p class="font-mono text-xs uppercase tracking-[0.2em] text-vortex mb-3">System Notification</p>
       <h2 class="font-display text-2xl sm:text-3xl text-ink">
@@ -16,19 +19,14 @@
       </p>
     </div>
 
-    <!-- Direct HTML Form connected to follow.it -->
-    <!-- ACTION REQUIRED: Verify this action URL matches the one follow.it gave you -->
+    <!-- Direct HTML Form connected to your specific follow.it URL -->
     <form 
-      action="https://api.follow.it/subscribe" 
+      action="https://api.follow.it/subscription-form/b25lU2VBdGUwZFcvaTdtVDJnSzlqTyt0dEVFdGRjQ1dIaHE1NWpXT0xEZ1ptcmM4WFFqVTNuaVdZemRGZG54bThpbytUeFMwUStueTZOT0lYV0JzNHFCby92YytjQ3hFLzhjVFVVaEZHR3ZOK3ZkK3ZqaWhXNGJNRGpmVTdnQ0F8MktoNjNtY3pNdm1Vd21wTEUzVjBuNFArVXlHQTV4TXJYTGJzQmJyTWRHcz0=/8" 
       method="post" 
       target="_blank"
       class="flex flex-col sm:flex-row gap-3 w-full" 
       id="subscribe-form"
     >
-      <!-- ACTION REQUIRED: You MUST paste your specific follow.it feed ID or link here -->
-      <input type="hidden" name="feed" value="YOUR_FEED_ID_HERE" />
-      <input type="hidden" name="action" value="subscribe" />
-
       <input
         type="email"
         name="email"
