@@ -16,20 +16,22 @@
       </p>
     </div>
 
-    <!-- Hidden iframe catches the page redirect -->
-    <iframe name="hidden_iframe" id="hidden_iframe" class="hidden" style="display:none;"></iframe>
-
-    <!-- Direct HTML Form connected to your specific Kit account -->
+    <!-- Direct HTML Form connected to follow.it -->
+    <!-- ACTION REQUIRED: Verify this action URL matches the one follow.it gave you -->
     <form 
-      action="https://app.kit.com/forms/9936438/subscriptions" 
+      action="https://api.follow.it/subscribe" 
       method="post" 
-      target="hidden_iframe"
+      target="_blank"
       class="flex flex-col sm:flex-row gap-3 w-full" 
       id="subscribe-form"
     >
+      <!-- ACTION REQUIRED: You MUST paste your specific follow.it feed ID or link here -->
+      <input type="hidden" name="feed" value="YOUR_FEED_ID_HERE" />
+      <input type="hidden" name="action" value="subscribe" />
+
       <input
         type="email"
-        name="email_address"
+        name="email"
         required
         placeholder="name@domain.com"
         class="flex-1 bg-void border border-hairline rounded px-4 py-3 text-ink text-sm font-mono focus:outline-none focus:border-flow focus:ring-1 focus:ring-flow transition-all placeholder:text-ink-faint"
@@ -46,9 +48,9 @@
   <!-- Success Overlay -->
   <div id="subscribe-success" class="hidden absolute inset-0 bg-void/95 backdrop-blur-sm z-20 flex flex-col items-center justify-center border border-flow/30 rounded-lg">
     <p class="text-flow font-mono text-sm mb-2">// Status 200: OK</p>
-    <h3 class="text-ink font-display text-2xl">Subscription Confirmed.</h3>
+    <h3 class="text-ink font-display text-2xl">Awaiting Confirmation.</h3>
     <p class="text-ink-muted mt-2 text-sm text-center max-w-sm">
-      Welcome aboard. Your welcome note is on its way.
+      A new tab has opened to verify your subscription. Please complete it to receive field notes.
     </p>
     <button id="close-success" class="mt-6 text-xs font-mono border border-hairline px-4 py-2 rounded text-ink-muted hover:text-ink hover:border-ink/50 transition">
       Close Window [x]
@@ -58,21 +60,16 @@
 
 <script>
   const form = document.getElementById("subscribe-form") as HTMLFormElement | null;
-  const iframe = document.getElementById("hidden_iframe") as HTMLIFrameElement | null;
   const successOverlay = document.getElementById("subscribe-success");
   const closeBtn = document.getElementById("close-success");
-  let isSubmitting = false;
 
+  // When form submits (opens in new tab), show our success overlay locally
   form?.addEventListener("submit", () => {
-    isSubmitting = true;
-  });
-
-  iframe?.addEventListener("load", () => {
-    if (isSubmitting) {
+    // Slight delay so the browser can process the new tab request first
+    setTimeout(() => {
       successOverlay?.classList.remove("hidden");
-      form?.reset();
-      isSubmitting = false;
-    }
+      form.reset();
+    }, 500);
   });
 
   closeBtn?.addEventListener("click", () => {
